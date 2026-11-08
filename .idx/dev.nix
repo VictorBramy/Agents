@@ -6,6 +6,39 @@
     pkgs.python3Packages.pip
     pkgs.python3Packages.virtualenv
 
+    # Nix wrapper binaries so IDX backend daemon can immediately find pip3 and pip in $PATH
+    (pkgs.writeShellScriptBin "pip3" ''
+      #!/usr/bin/env bash
+      if [ -f "$PWD/.venv/bin/pip" ]; then
+        exec "$PWD/.venv/bin/pip" "$@"
+      elif [ -f "./.venv/bin/pip" ]; then
+        exec "./.venv/bin/pip" "$@"
+      else
+        ${pkgs.python3}/bin/python3 -m venv "$PWD/.venv" 2>/dev/null || true
+        if [ -f "$PWD/.venv/bin/pip" ]; then
+          exec "$PWD/.venv/bin/pip" "$@"
+        else
+          exec ${pkgs.python3}/bin/python3 -m pip "$@"
+        fi
+      fi
+    '')
+
+    (pkgs.writeShellScriptBin "pip" ''
+      #!/usr/bin/env bash
+      if [ -f "$PWD/.venv/bin/pip" ]; then
+        exec "$PWD/.venv/bin/pip" "$@"
+      elif [ -f "./.venv/bin/pip" ]; then
+        exec "./.venv/bin/pip" "$@"
+      else
+        ${pkgs.python3}/bin/python3 -m venv "$PWD/.venv" 2>/dev/null || true
+        if [ -f "$PWD/.venv/bin/pip" ]; then
+          exec "$PWD/.venv/bin/pip" "$@"
+        else
+          exec ${pkgs.python3}/bin/python3 -m pip "$@"
+        fi
+      fi
+    '')
+
     # System libraries required for Playwright Chromium headless
     pkgs.nspr
     pkgs.nss
@@ -58,6 +91,19 @@
           fi
         '';
       };
+      onStart = {
+        ensure-env = ''
+          if [ ! -f .env ]; then
+            cp .env.example .env
+          fi
+          if [ ! -d .venv ]; then
+            python3 -m venv .venv
+            source .venv/bin/activate
+            pip install -r requirements.txt
+            playwright install chromium
+          fi
+        '';
+      };
     };
 
     previews = {
@@ -67,7 +113,7 @@
           command = [
             "bash"
             "-c"
-            "source .venv/bin/activate && python3 -m uvicorn main:app --host 0.0.0.0 --port $PORT"
+            "if [ ! -d .venv ]; then python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt && playwright install chromium; else source .venv/bin/activate; fi && python3 -m uvicorn main:app --host 0.0.0.0 --port $PORT"
           ];
           manager = "web";
         };

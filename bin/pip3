@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+if [ -f "$PWD/.venv/bin/pip" ]; then
+  exec "$PWD/.venv/bin/pip" "$@"
+elif [ -f "./.venv/bin/pip" ]; then
+  exec "./.venv/bin/pip" "$@"
+fi
+exec python3 -m pip "$@"

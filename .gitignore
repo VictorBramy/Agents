@@ -42,7 +42,7 @@ share/python-wheels/
 # Binaries & Executables
 *.exe
 bin/*.exe
-bin/
+
 
 # Testing & Artifacts
 .pytest_cache/
