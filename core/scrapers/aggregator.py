@@ -411,8 +411,6 @@ def run_job_search() -> Dict[str, Any]:
     # Bilingual Keyword Strategy: combine candidate roles with English equivalents
     # Bilingual Keyword Strategy: combine candidate roles with English equivalents
     # Bilingual Keyword Strategy: combine candidate roles with English equivalents
-    # Bilingual Keyword Strategy: combine candidate roles with English equivalents
-    # Bilingual Keyword Strategy: combine candidate roles with English equivalents
     keywords = []
     if target_roles:
         keywords.extend(target_roles[:5])
@@ -420,18 +418,6 @@ def run_job_search() -> Dict[str, Any]:
         keywords.extend(skills[:5])
     if not keywords:
         keywords = ["כלכלן", "Junior Economist", "אנליסט פיננסי", "Financial Analyst", "כלכלנית"]
-
-    # Ensure English tech keywords exist for Greenhouse / Comeet
-    english_equivalents = ["Economist", "Financial Analyst", "FP&A", "Business Analyst", "Pricing Analyst", "Junior Analyst"]
-    for eng in english_equivalents:
-        if not any(eng.lower() in k.lower() for k in keywords):
-            keywords.append(eng)
-
-    # Ensure English tech keywords exist for Greenhouse / Comeet
-    english_equivalents = ["Economist", "Financial Analyst", "FP&A", "Business Analyst", "Pricing Analyst", "Junior Analyst"]
-    for eng in english_equivalents:
-        if not any(eng.lower() in k.lower() for k in keywords):
-            keywords.append(eng)
 
     # Ensure English tech keywords exist for Greenhouse / Comeet
     english_equivalents = ["Economist", "Financial Analyst", "FP&A", "Business Analyst", "Pricing Analyst", "Junior Analyst"]
