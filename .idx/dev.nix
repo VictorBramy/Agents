@@ -2,9 +2,9 @@
   channel = "stable-24.11";
 
   packages = [
-    pkgs.python311
-    pkgs.python311Packages.pip
-    pkgs.python311Packages.virtualenv
+    pkgs.python3
+    pkgs.python3Packages.pip
+    pkgs.python3Packages.virtualenv
 
     # System libraries required for Playwright Chromium headless
     pkgs.nspr
