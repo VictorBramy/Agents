@@ -1,0 +1,19 @@
+{
+  "run": {
+    "serviceId": "smart-flight-hunter",
+    "region": "europe-west1",
+    "rootDir": "./"
+  },
+  "hosting": {
+    "public": "public",
+    "rewrites": [
+      {
+        "source": "**",
+        "run": {
+          "serviceId": "smart-flight-hunter",
+          "region": "europe-west1"
+        }
+      }
+    ]
+  }
+}

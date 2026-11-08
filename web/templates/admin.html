@@ -1,0 +1,2276 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>דאשבורד מנהל מערכת | צייד הטיסות AI</title>
+    
+    <!-- Google Fonts & Tailwind & Lucide Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Chart.js for Admin Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Assistant', 'sans-serif'],
+                    },
+                    colors: {
+                        admin: {
+                            50: '#FAF5FF',
+                            100: '#F3E8FF',
+                            500: '#A855F7',
+                            600: '#9333EA',
+                            700: '#7E22CE',
+                            900: '#3B0764',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Assistant', sans-serif;
+            background-color: #0A0D14;
+            color: #F1F5F9;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .glass-panel {
+            background: rgba(17, 22, 37, 0.82);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .glass-card {
+            background: rgba(22, 29, 49, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .stat-card-glow {
+            box-shadow: 0 4px 20px -2px rgba(147, 51, 234, 0.15);
+        }
+        /* Hide scrollbars but keep smooth scroll */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Modal and drawer transitions */
+        .bottom-sheet {
+            transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+        }
+        .bottom-sheet.hidden-sheet {
+            transform: translateY(105%);
+            opacity: 0;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-[#0A0D14] text-slate-100 flex flex-col antialiased selection:bg-purple-600 selection:text-white pb-20 md:pb-10">
+
+    <!-- Top Navigation Bar -->
+    <header class="sticky top-0 z-40 glass-panel border-b border-slate-800/80 px-4 py-3 sm:px-6">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <a href="/flights" class="flex items-center gap-2 group text-slate-400 hover:text-white transition-colors" title="חזרה לאתר הטיסות">
+                    <div class="w-9 h-9 rounded-xl bg-slate-800/90 border border-slate-700/60 flex items-center justify-center group-hover:border-purple-500/50 transition-colors">
+                        <i data-lucide="arrow-right" class="w-4 h-4 text-slate-300"></i>
+                    </div>
+                </a>
+                <div class="flex items-center gap-2.5">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 via-indigo-600 to-amber-400 p-[1.5px] shadow-lg shadow-purple-900/30">
+                        <div class="w-full h-full bg-[#0E1322] rounded-[10px] flex items-center justify-center">
+                            <i data-lucide="shield-check" class="w-5 h-5 text-amber-400"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h1 class="text-lg font-black tracking-tight bg-gradient-to-l from-white via-slate-100 to-purple-200 bg-clip-text text-transparent">
+                                מרכז שליטה וניהול
+                            </h1>
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/15 text-amber-400 border border-amber-500/30">
+                                👑 ADMIN
+                            </span>
+                        </div>
+                        <p class="text-xs text-slate-400 hidden sm:block">צייד הטיסות AI &bull; ניטור משתמשים ומכסות בזמן אמת</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2.5">
+                <!-- Current Admin Pill -->
+                <div id="adminUserPill" class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-purple-950/40 border border-purple-800/40 text-xs">
+                    <div class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
+                    <span id="adminEmailDisplay" class="font-semibold text-purple-200">xeinok2@gmail.com</span>
+                </div>
+
+                <!-- Refresh Button -->
+                <button onclick="loadAdminData(true)" class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800/90 hover:bg-slate-700/90 border border-slate-700/70 text-xs font-semibold text-slate-200 transition-all active:scale-95 shadow-sm" title="רענן נתונים">
+                    <i data-lucide="refresh-cw" id="refreshIcon" class="w-3.5 h-3.5 text-purple-400"></i>
+                    <span class="hidden sm:inline">רענן</span>
+                </button>
+
+                <a href="/flights" class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-bold shadow-md shadow-purple-900/40 transition-all active:scale-95">
+                    <i data-lucide="plane-takeoff" class="w-3.5 h-3.5"></i>
+                    <span>לאפליקציה</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Segmented Tabs Bar (Mobile & Desktop) -->
+    <div class="sticky top-[61px] z-30 glass-panel border-b border-slate-800/60 px-4 py-2">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+            <div class="grid grid-cols-4 gap-1 p-1 bg-slate-900/80 rounded-xl border border-slate-800 text-center text-xs font-semibold w-full sm:w-auto">
+                <button onclick="switchAdminTab('overview')" id="tabBtn-overview" class="py-2 px-3 sm:px-4 rounded-lg bg-purple-600 text-white shadow-sm transition-all flex items-center justify-center gap-1.5">
+                    <i data-lucide="bar-chart-3" class="w-3.5 h-3.5"></i>
+                    <span>סקירה</span>
+                </button>
+                <button onclick="switchAdminTab('users')" id="tabBtn-users" class="py-2 px-3 sm:px-4 rounded-lg text-slate-400 hover:text-slate-200 transition-all flex items-center justify-center gap-1.5">
+                    <i data-lucide="users" class="w-3.5 h-3.5"></i>
+                    <span>יוזרים (<span id="mobileUsersCount">0</span>)</span>
+                </button>
+                <button onclick="switchAdminTab('bit')" id="tabBtn-bit" class="py-2 px-3 sm:px-4 rounded-lg text-slate-400 hover:text-slate-200 transition-all flex items-center justify-center gap-1.5 relative">
+                    <span class="w-4 h-4 rounded-md bg-gradient-to-tr from-sky-500 to-indigo-600 text-white flex items-center justify-center text-[10px] font-black">bit</span>
+                    <span>תשלומי ביט</span>
+                    <span id="pendingBitBadge" class="hidden px-1.5 py-0.5 rounded-full bg-amber-400 text-slate-950 font-black text-[10px]">0</span>
+                </button>
+                <button onclick="switchAdminTab('searches')" id="tabBtn-searches" class="py-2 px-3 sm:px-4 rounded-lg text-slate-400 hover:text-slate-200 transition-all flex items-center justify-center gap-1.5">
+                    <i data-lucide="activity" class="w-3.5 h-3.5"></i>
+                    <span>חיפושים</span>
+                </button>
+                <button onclick="switchAdminTab('alerts')" id="tabBtn-alerts" class="py-2 px-3 sm:px-4 rounded-lg text-slate-400 hover:text-slate-200 transition-all flex items-center justify-center gap-1.5 relative">
+                    <i data-lucide="bell" class="w-3.5 h-3.5 text-emerald-400"></i>
+                    <span>מעקב מחירים</span>
+                    <span id="alertsDropsBadge" class="hidden px-1.5 py-0.5 rounded-full bg-emerald-500 text-slate-950 font-black text-[10px]">0</span>
+                </button>
+            </div>
+
+            <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/80 border border-slate-800 text-xs text-slate-300">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span>מספר יעד ביט להעברות: <strong class="text-amber-300 font-bold tracking-wider">052-4845131</strong></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto w-full px-4 sm:px-6 py-6 flex-1 space-y-6">
+
+        <!-- Unauthorized Screen (Hidden by default, shown if not admin) -->
+        <div id="unauthorizedBox" class="hidden max-w-md mx-auto my-12 p-6 glass-panel rounded-2xl border border-red-500/30 text-center space-y-4">
+            <div class="w-14 h-14 mx-auto rounded-full bg-red-500/10 border border-red-500/30 flex items-center justify-center">
+                <i data-lucide="lock" class="w-7 h-7 text-red-400"></i>
+            </div>
+            <h2 class="text-xl font-bold text-white">אין הרשאת גישה לדף ניהול</h2>
+            <p class="text-sm text-slate-300">
+                דף זה מיועד למנהלי מערכת בלבד. התחבר עם החשבון המורשה 
+                <span class="font-bold text-purple-300">xeinok2@gmail.com</span> כדי לצפות בדאשבורד.
+            </p>
+            <div class="pt-2 flex flex-col gap-2">
+                <a href="/flights" class="w-full py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-sm shadow-lg shadow-purple-900/30">
+                    מעבר לאתר והתחברות
+                </a>
+            </div>
+        </div>
+
+        <!-- Admin Content Wrapper -->
+        <div id="adminContent" class="space-y-6">
+
+            <!-- Section 1: KPIs & Metrics (Tab: overview) -->
+            <section id="section-overview" class="space-y-6">
+                <!-- KPI 6 Cards Grid -->
+                <div class="grid grid-cols-2 lg:grid-cols-6 gap-3.5 sm:gap-4">
+                    
+                    <!-- KPI 1: Total Users -->
+                    <div class="glass-card stat-card-glow rounded-2xl p-4 sm:p-5 relative overflow-hidden group">
+                        <div class="absolute -left-4 -bottom-4 w-20 h-20 bg-purple-500/10 rounded-full blur-xl group-hover:bg-purple-500/20 transition-all"></div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-semibold text-slate-400">סה"כ משתמשים</span>
+                            <div class="w-8 h-8 rounded-lg bg-purple-500/15 border border-purple-500/20 flex items-center justify-center">
+                                <i data-lucide="users" class="w-4 h-4 text-purple-400"></i>
+                            </div>
+                        </div>
+                        <div class="flex items-baseline gap-2">
+                            <span id="kpiTotalUsers" class="text-2xl sm:text-3xl font-black text-white">0</span>
+                            <span class="text-[11px] font-semibold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">
+                                +<span id="kpiActiveUsers24h">0</span> פעילים
+                            </span>
+                        </div>
+                        <div class="mt-2 text-[11px] text-slate-400 flex items-center gap-1">
+                            <i data-lucide="clock" class="w-3 h-3 text-slate-500"></i>
+                            <span>בשבוע האחרון: <strong id="kpiActiveUsers7d" class="text-slate-200">0</strong></span>
+                        </div>
+                    </div>
+
+                    <!-- KPI 2: Total Searches -->
+                    <div class="glass-card stat-card-glow rounded-2xl p-4 sm:p-5 relative overflow-hidden group">
+                        <div class="absolute -left-4 -bottom-4 w-20 h-20 bg-sky-500/10 rounded-full blur-xl group-hover:bg-sky-500/20 transition-all"></div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-semibold text-slate-400">סה"כ חיפושים</span>
+                            <div class="w-8 h-8 rounded-lg bg-sky-500/15 border border-sky-500/20 flex items-center justify-center">
+                                <i data-lucide="search" class="w-4 h-4 text-sky-400"></i>
+                            </div>
+                        </div>
+                        <div class="flex items-baseline gap-2">
+                            <span id="kpiTotalSearches" class="text-2xl sm:text-3xl font-black text-white">0</span>
+                            <span class="text-[11px] font-semibold text-sky-400 bg-sky-500/10 px-1.5 py-0.5 rounded">
+                                +<span id="kpiSearches24h">0</span> היום
+                            </span>
+                        </div>
+                        <div class="mt-2 text-[11px] text-slate-400 flex items-center gap-1">
+                            <i data-lucide="zap" class="w-3 h-3 text-amber-400"></i>
+                            <span>ממוצע ליוזר: <strong id="kpiAvgSearches" class="text-slate-200">0</strong></span>
+                        </div>
+                    </div>
+
+                    <!-- KPI 3: Revenue MRR -->
+                    <div class="glass-card stat-card-glow rounded-2xl p-4 sm:p-5 relative overflow-hidden group">
+                        <div class="absolute -left-4 -bottom-4 w-20 h-20 bg-emerald-500/10 rounded-full blur-xl group-hover:bg-emerald-500/20 transition-all"></div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-semibold text-slate-400">הכנסה חודשית (MRR)</span>
+                            <div class="w-8 h-8 rounded-lg bg-emerald-500/15 border border-emerald-500/20 flex items-center justify-center">
+                                <i data-lucide="credit-card" class="w-4 h-4 text-emerald-400"></i>
+                            </div>
+                        </div>
+                        <div class="flex items-baseline gap-1">
+                            <span id="kpiTotalRevenue" class="text-2xl sm:text-3xl font-black text-emerald-400">0</span>
+                            <span class="text-base font-bold text-emerald-400">₪</span>
+                        </div>
+                        <div class="mt-2 text-[11px] text-slate-400 flex items-center gap-1">
+                            <i data-lucide="check-circle" class="w-3 h-3 text-emerald-400"></i>
+                            <span>מנויים משלמים: <strong id="kpiPayingSubscribers" class="text-slate-200">0</strong></span>
+                        </div>
+                    </div>
+
+                    <!-- KPI 4: Conversion Rate -->
+                    <div class="glass-card stat-card-glow rounded-2xl p-4 sm:p-5 relative overflow-hidden group">
+                        <div class="absolute -left-4 -bottom-4 w-20 h-20 bg-amber-500/10 rounded-full blur-xl group-hover:bg-amber-500/20 transition-all"></div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-semibold text-slate-400">יחס המרה לפרימיום</span>
+                            <div class="w-8 h-8 rounded-lg bg-amber-500/15 border border-amber-500/20 flex items-center justify-center">
+                                <i data-lucide="trending-up" class="w-4 h-4 text-amber-400"></i>
+                            </div>
+                        </div>
+                        <div class="flex items-baseline gap-1">
+                            <span id="kpiConversionRate" class="text-2xl sm:text-3xl font-black text-amber-300">0</span>
+                            <span class="text-lg font-bold text-amber-400">%</span>
+                        </div>
+                        <div class="mt-2 text-[11px] text-slate-400 flex items-center gap-1">
+                            <i data-lucide="alert-circle" class="w-3 h-3 text-red-400"></i>
+                            <span>ניצלו מכסה: <strong id="kpiDepletedCount" class="text-slate-200">0</strong></span>
+                        </div>
+                    </div>
+
+                    <!-- KPI 5: Top Destination -->
+                    <div class="glass-card stat-card-glow rounded-2xl p-4 sm:p-5 relative overflow-hidden group">
+                        <div class="absolute -left-4 -bottom-4 w-20 h-20 bg-indigo-500/10 rounded-full blur-xl group-hover:bg-indigo-500/20 transition-all"></div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-semibold text-slate-400">היעד המבוקש ביותר</span>
+                            <div class="w-8 h-8 rounded-lg bg-indigo-500/15 border border-indigo-500/20 flex items-center justify-center">
+                                <i data-lucide="map-pin" class="w-4 h-4 text-indigo-400"></i>
+                            </div>
+                        </div>
+                        <div class="flex items-baseline gap-2">
+                            <span id="kpiTopDestCode" class="text-2xl sm:text-3xl font-black text-indigo-300">ATH</span>
+                            <span id="kpiTopDestCount" class="text-xs font-semibold text-slate-400">0 חיפושים</span>
+                        </div>
+                        <div class="mt-2 text-[11px] text-slate-400 flex items-center gap-1">
+                            <i data-lucide="tag" class="w-3 h-3 text-slate-500"></i>
+                            <span>מחיר ממוצע: <strong id="kpiTopDestAvgPrice" class="text-slate-200">-</strong></span>
+                        </div>
+                    </div>
+
+                    <!-- KPI 6: Pending Bit Payments -->
+                    <div onclick="switchAdminTab('bit')" class="glass-card stat-card-glow rounded-2xl p-4 sm:p-5 relative overflow-hidden group cursor-pointer border border-amber-500/20 hover:border-amber-400/50 transition-all">
+                        <div class="absolute -left-4 -bottom-4 w-20 h-20 bg-amber-500/10 rounded-full blur-xl group-hover:bg-amber-500/20 transition-all"></div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-semibold text-slate-400">בקשות ביט (052-4845131)</span>
+                            <div class="w-8 h-8 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center">
+                                <i data-lucide="bell" class="w-4 h-4 text-amber-400"></i>
+                            </div>
+                        </div>
+                        <div class="flex items-baseline gap-2">
+                            <span id="kpiPendingBit" class="text-2xl sm:text-3xl font-black text-amber-300">0</span>
+                            <span class="text-[11px] font-semibold text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded">
+                                ממתינים
+                            </span>
+                        </div>
+                        <div class="mt-2 text-[11px] text-amber-300 font-semibold flex items-center gap-1">
+                            <span>ניהול ואישור תשלומים</span>
+                            <i data-lucide="arrow-left" class="w-3 h-3"></i>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Charts Row (2 columns) -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    
+                    <!-- Chart 1: Plan Distribution (Doughnut) -->
+                    <div class="lg:col-span-4 glass-panel rounded-2xl p-5 flex flex-col justify-between">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center gap-2">
+                                <i data-lucide="pie-chart" class="w-4 h-4 text-purple-400"></i>
+                                <h3 class="font-bold text-sm text-slate-200">פילוח תוכניות מנויים</h3>
+                            </div>
+                            <span class="text-[11px] text-slate-400">חלוקת משתמשים</span>
+                        </div>
+                        <div class="relative h-56 flex items-center justify-center">
+                            <canvas id="planDistributionChart"></canvas>
+                        </div>
+                        <div id="planDistributionLegend" class="mt-4 grid grid-cols-2 gap-2 text-xs text-slate-300">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Chart 2: Top Destinations (Bar) -->
+                    <div class="lg:col-span-8 glass-panel rounded-2xl p-5 flex flex-col justify-between">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center gap-2">
+                                <i data-lucide="compass" class="w-4 h-4 text-sky-400"></i>
+                                <h3 class="font-bold text-sm text-slate-200">יעדי טיסות מובילים לפי כמות חיפושים</h3>
+                            </div>
+                            <span class="text-[11px] text-slate-400">Top 7 Destinations</span>
+                        </div>
+                        <div class="relative h-64">
+                            <canvas id="topDestinationsChart"></canvas>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- Section 2: Users Management (Tab: users) -->
+            <section id="section-users" class="space-y-4 hidden">
+                <div class="glass-panel rounded-2xl p-5 space-y-4">
+                    
+                    <!-- Search & Filter Header -->
+                    <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+                        <div class="flex items-center gap-2">
+                            <div class="w-8 h-8 rounded-xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center">
+                                <i data-lucide="users" class="w-4 h-4 text-purple-400"></i>
+                            </div>
+                            <div>
+                                <h2 class="font-bold text-base text-slate-100">ניהול משתמשים ומכסות</h2>
+                                <p class="text-xs text-slate-400">סה"כ רשומים במערכת: <strong id="usersListTotalBadge" class="text-purple-300">0</strong></p>
+                            </div>
+                        </div>
+
+                        <!-- Search input & Plan Filters -->
+                        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+                            <div class="relative flex-1 sm:w-64">
+                                <i data-lucide="search" class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                                <input type="text" id="userSearchInput" oninput="filterUsersList()" placeholder="חפש לפי שם או אימייל..." 
+                                       class="w-full bg-slate-900/90 border border-slate-700/80 rounded-xl pr-9 pl-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-purple-500 transition-colors">
+                            </div>
+
+                            <select id="userTierFilter" onchange="filterUsersList()" class="bg-slate-900/90 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-purple-500 transition-colors">
+                                <option value="all">כל המסלולים</option>
+                                <option value="admin">👑 מנהל (Admin)</option>
+                                <option value="free">חינמי (10/חודש)</option>
+                                <option value="starter">בסיסי - 10 ₪ (20/חודש)</option>
+                                <option value="pro">Pro - 20 ₪ (40/חודש)</option>
+                                <option value="vip">VIP - 30 ₪ (100/חודש)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Desktop Users Table -->
+                    <div class="hidden md:block overflow-x-auto rounded-xl border border-slate-800">
+                        <table class="w-full text-right text-xs">
+                            <thead class="bg-slate-900/90 text-slate-400 border-b border-slate-800 font-semibold">
+                                <tr>
+                                    <th class="p-3">משתמש</th>
+                                    <th class="p-3">סוג מנוי ומחיר</th>
+                                    <th class="p-3">ניצול מכסה חודשית</th>
+                                    <th class="p-3">חיפושים שבוצעו</th>
+                                    <th class="p-3">התחברות אחרונה</th>
+                                    <th class="p-3 text-center">פעולות ניהול</th>
+                                </tr>
+                            </thead>
+                            <tbody id="desktopUsersTableBody" class="divide-y divide-slate-800/80">
+                                <tr>
+                                    <td colspan="6" class="p-6 text-center text-slate-400">טוען משתמשים...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Mobile Users Cards List -->
+                    <div id="mobileUsersCardsList" class="md:hidden space-y-3">
+                        <div class="p-6 text-center text-slate-400">טוען משתמשים...</div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- Section 3: Bit Payments Management (Tab: bit) -->
+            <section id="section-bit" class="space-y-4 hidden">
+                <div class="glass-panel rounded-2xl p-5 space-y-4">
+                    
+                    <!-- Header -->
+                    <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center font-black text-white text-sm shadow-md shadow-sky-500/20">
+                                bit
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <h2 class="font-bold text-base text-slate-100">בקשות תשלום והפעלת מנוי בביט</h2>
+                                    <span id="bitPaymentsCountBadge" class="text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold">0 בקשות</span>
+                                </div>
+                                <p class="text-xs text-slate-400">העברות כספיות ישירות למספר <strong class="text-amber-300">052-4845131</strong> עבור שדרוג מנויי משתמשים</p>
+                            </div>
+                        </div>
+
+                        <!-- Status Filter -->
+                        <div class="flex items-center gap-2">
+                            <select id="bitStatusFilter" onchange="filterBitPayments()" class="bg-slate-900/90 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-purple-500 transition-colors">
+                                <option value="all">כל הבקשות</option>
+                                <option value="pending" selected>ממתינות לאישור ⏳</option>
+                                <option value="approved">מאושרות ✓</option>
+                                <option value="rejected">נדחו ✕</option>
+                            </select>
+                            <button onclick="fetchBitPayments(true)" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition" title="רענן תשלומי ביט">
+                                <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Target Phone Notice Banner -->
+                    <div class="p-3.5 rounded-xl bg-slate-900/90 border border-sky-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-7 h-7 rounded-lg bg-sky-500/20 text-sky-400 flex items-center justify-center font-bold">
+                                💡
+                            </div>
+                            <div>
+                                <span class="text-slate-300">טלפון לקבלת כספים בביט:</span>
+                                <span class="font-black text-amber-300 mr-1 text-sm tracking-wide">052-4845131</span>
+                            </div>
+                        </div>
+                        <div class="text-[11px] text-slate-400">
+                            לאחר בדיקת קבלת ההודעה מאפליקציית ביט, לחץ על <strong>"אשר תשלום והפעל מנוי"</strong> והמערכת תשדרג את המשתמש מיידית.
+                        </div>
+                    </div>
+
+                    <!-- Desktop Bit Table -->
+                    <div class="hidden md:block overflow-x-auto rounded-xl border border-slate-800">
+                        <table class="w-full text-right text-xs">
+                            <thead class="bg-slate-900/90 text-slate-400 border-b border-slate-800 font-semibold">
+                                <tr>
+                                    <th class="p-3">מזהה ותאריך</th>
+                                    <th class="p-3">משתמש</th>
+                                    <th class="p-3">מסלול מבוקש</th>
+                                    <th class="p-3">סכום בביט</th>
+                                    <th class="p-3">טלפון שולח (משתמש)</th>
+                                    <th class="p-3">טלפון יעד</th>
+                                    <th class="p-3">סטטוס</th>
+                                    <th class="p-3 text-center">פעולות אישור</th>
+                                </tr>
+                            </thead>
+                            <tbody id="desktopBitTableBody" class="divide-y divide-slate-800/80">
+                                <tr>
+                                    <td colspan="8" class="p-6 text-center text-slate-400">טוען בקשות תשלום בביט...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Mobile Bit Cards List -->
+                    <div id="mobileBitCardsList" class="md:hidden space-y-3">
+                        <div class="p-6 text-center text-slate-400">טוען בקשות תשלום בביט...</div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- Section 4: Search History & Full Query Log (Tab: searches) -->
+            <section id="section-searches" class="space-y-4 hidden">
+                <div class="glass-panel rounded-2xl p-5 space-y-5">
+                    
+                    <!-- Header -->
+                    <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center font-bold text-white shadow-md shadow-sky-500/20">
+                                <i data-lucide="radar" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <h2 class="font-bold text-base text-slate-100">היסטוריית חיפושים מלאה וסינון מתקדם</h2>
+                                    <span id="searchesCountBadge" class="text-xs px-2.5 py-0.5 rounded-full bg-sky-500/20 text-sky-300 border border-sky-500/30 font-bold">טוען...</span>
+                                </div>
+                                <p class="text-xs text-slate-400">יומן מלא של כל החיפושים שבוצעו במערכת &bull; בהיעדר סינון מוצגת ההיסטוריה במלואה</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            <button onclick="fetchGlobalSearches(true)" class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition active:scale-95 shadow-sm" title="רענן היסטוריה">
+                                <i data-lucide="refresh-cw" id="searchesRefreshIcon" class="w-3.5 h-3.5 text-sky-400"></i>
+                                <span>רענן חיפושים</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Filter Toolbar -->
+                    <div class="glass-card rounded-2xl p-4 border border-slate-800/80 space-y-3.5">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+                            <!-- Free Text Search -->
+                            <div class="relative sm:col-span-2">
+                                <i data-lucide="search" class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                                <input type="text" id="searchesFilterQuery" oninput="debounceSearchFilters()" placeholder="חיפוש חופשי (טקסט פרומפט, עיר, אימייל, שם)..." 
+                                       class="w-full bg-slate-900/90 border border-slate-700/80 rounded-xl pr-9 pl-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-sky-500 transition-colors">
+                            </div>
+
+                            <!-- Destination Select -->
+                            <div>
+                                <select id="searchesFilterDest" onchange="applySearchFilters()" class="w-full bg-slate-900/90 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-sky-500 transition-colors">
+                                    <option value="all">כל היעדים (All Destinations)</option>
+                                </select>
+                            </div>
+
+                            <!-- User Select -->
+                            <div>
+                                <select id="searchesFilterUser" onchange="applySearchFilters()" class="w-full bg-slate-900/90 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-sky-500 transition-colors">
+                                    <option value="all">כל המשתמשים (All Users)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Secondary Filters Row -->
+                        <div class="flex flex-wrap items-center justify-between gap-3 pt-1 border-t border-slate-800/60 text-xs">
+                            <div class="flex flex-wrap items-center gap-3">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="text-slate-400 text-[11px]">מתאריך חיפוש:</span>
+                                    <input type="date" id="searchesFilterFromDate" onchange="applySearchFilters()" class="bg-slate-900 border border-slate-700/80 rounded-lg px-2 py-1 text-xs text-slate-200 focus:outline-none focus:border-sky-500">
+                                </div>
+                                <div class="flex items-center gap-1.5">
+                                    <span class="text-slate-400 text-[11px]">עד תאריך:</span>
+                                    <input type="date" id="searchesFilterToDate" onchange="applySearchFilters()" class="bg-slate-900 border border-slate-700/80 rounded-lg px-2 py-1 text-xs text-slate-200 focus:outline-none focus:border-sky-500">
+                                </div>
+                                <label class="inline-flex items-center gap-2 cursor-pointer text-slate-300 hover:text-white select-none">
+                                    <input type="checkbox" id="searchesFilterDirect" onchange="applySearchFilters()" class="rounded bg-slate-900 border-slate-700 text-sky-500 focus:ring-0 w-3.5 h-3.5">
+                                    <span class="text-xs">טיסות ישירות בלבד ✈️</span>
+                                </label>
+                            </div>
+
+                            <div class="flex items-center gap-2">
+                                <span id="searchesActiveFiltersPill" class="hidden px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-sky-500/15 text-sky-300 border border-sky-500/30">
+                                    🔍 סינון פעיל
+                                </span>
+                                <button onclick="resetSearchFilters()" class="px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-semibold border border-slate-700/70 transition flex items-center gap-1.5 active:scale-95 shadow-sm">
+                                    <i data-lucide="rotate-ccw" class="w-3.5 h-3.5 text-slate-400"></i>
+                                    <span>נקה סינון (הצג הכל)</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Global Searches Feed Container -->
+                    <div id="globalSearchesFeed" class="space-y-3">
+                        <div class="p-8 text-center text-slate-400">טוען יומן חיפושים...</div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- Section 5: Price Drop Alerts & Route Tracking Monitor (Tab: alerts) -->
+            <section id="section-alerts" class="space-y-4 hidden">
+                <div class="glass-panel rounded-2xl p-5 space-y-5">
+                    
+                    <!-- Header & Actions -->
+                    <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-600 flex items-center justify-center font-bold text-white shadow-md shadow-emerald-500/20">
+                                <i data-lucide="bell-ring" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <h2 class="font-bold text-base text-slate-100">מערכת מעקב מחירי טיסות והתראות</h2>
+                                    <span id="adminAlertsCountBadge" class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-bold">0 מסלולים</span>
+                                </div>
+                                <p class="text-xs text-slate-400">מעקב רציף אחר מחירי טיסות של משתמשים, בדיקות אמת וזיהוי ירידות מחיר</p>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="flex items-center gap-2">
+                            <button onclick="triggerGlobalScanAdmin()" id="btnAdminGlobalScan"
+                                    class="px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:opacity-95 text-white font-bold text-xs shadow-md shadow-emerald-900/30 transition flex items-center gap-1.5 active:scale-95">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i>
+                                <span>הרץ סריקת מחירים עולמית</span>
+                            </button>
+                            <button onclick="fetchPriceAlerts(true)" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition" title="רענן נתוני מעקב">
+                                <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 4 KPI Cards Grid -->
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                        <div class="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-sky-500/10 text-sky-400 flex items-center justify-center">
+                                <i data-lucide="map-pin" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <span class="text-[11px] text-slate-400 block font-semibold">מסלולים מנוטרים</span>
+                                <span id="alertKpiTotalTracked" class="text-lg font-black text-white">0</span>
+                            </div>
+                        </div>
+
+                        <div class="p-3.5 rounded-xl bg-slate-900/80 border border-emerald-500/30 flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+                                <i data-lucide="trending-down" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <span class="text-[11px] text-emerald-400 block font-semibold">ירידות מחיר שנתפסו 🔥</span>
+                                <span id="alertKpiTotalDrops" class="text-lg font-black text-emerald-400">0</span>
+                            </div>
+                        </div>
+
+                        <div class="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center">
+                                <i data-lucide="wallet" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <span class="text-[11px] text-slate-400 block font-semibold">חיסכון מצטבר</span>
+                                <span id="alertKpiTotalSavings" class="text-lg font-black text-amber-400">0$</span>
+                            </div>
+                        </div>
+
+                        <div class="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-purple-500/10 text-purple-400 flex items-center justify-center">
+                                <i data-lucide="percent" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <span class="text-[11px] text-slate-400 block font-semibold">הנחה מקסימלית</span>
+                                <span id="alertKpiMaxDrop" class="text-lg font-black text-purple-400">0%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Search and Status Filters -->
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 pt-1">
+                        <div class="relative flex-1">
+                            <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute right-3 top-3"></i>
+                            <input type="text" id="alertSearchInput" oninput="filterPriceAlerts()"
+                                   placeholder="חיפוש לפי אימייל משתמש, יעד או חברת תעופה..."
+                                   class="w-full bg-slate-900/90 border border-slate-700/80 rounded-xl pr-9 pl-4 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition">
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            <select id="alertStatusFilter" onchange="filterPriceAlerts()"
+                                    class="bg-slate-900/90 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 transition-colors">
+                                <option value="all">כל המסלולים</option>
+                                <option value="dropped" selected>ירידות מחיר בלבד 🔥</option>
+                                <option value="stable">מחיר יציב</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Desktop Tracked Table -->
+                    <div class="hidden md:block overflow-x-auto rounded-xl border border-slate-800">
+                        <table class="w-full text-right text-xs">
+                            <thead class="bg-slate-900/90 text-slate-400 border-b border-slate-800 font-semibold">
+                                <tr>
+                                    <th class="p-3">#</th>
+                                    <th class="p-3">משתמש</th>
+                                    <th class="p-3">מסלול ותאריכים</th>
+                                    <th class="p-3">חברה & סוג</th>
+                                    <th class="p-3">מחיר התחלתי</th>
+                                    <th class="p-3">מחיר עדכני</th>
+                                    <th class="p-3">מחיר יעד</th>
+                                    <th class="p-3">סטטוס ירידה</th>
+                                    <th class="p-3 text-center">פעולות</th>
+                                </tr>
+                            </thead>
+                            <tbody id="desktopAlertsTableBody" class="divide-y divide-slate-800/60 font-medium">
+                                <tr>
+                                    <td colspan="9" class="p-6 text-center text-slate-400">טוען מסלולים במעקב...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Mobile Tracked Cards -->
+                    <div id="mobileAlertsCardsList" class="md:hidden space-y-3">
+                        <div class="p-6 text-center text-slate-400">טוען מסלולים במעקב...</div>
+                    </div>
+
+                </div>
+            </section>
+
+        </div>
+
+    </main>
+
+    <!-- Drawer / Bottom Sheet: User Search History Modal -->
+    <div id="userHistoryModalBackdrop" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div id="userHistoryModalSheet" class="bottom-sheet hidden-sheet w-full sm:max-w-3xl max-h-[88vh] sm:max-h-[82vh] bg-[#0E1322] border-t sm:border border-slate-700/80 rounded-t-3xl sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+            
+            <!-- Mobile Drag Handle -->
+            <div class="w-12 h-1.5 bg-slate-700 rounded-full mx-auto my-2.5 sm:hidden"></div>
+
+            <!-- Drawer Header -->
+            <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/60">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center">
+                        <i data-lucide="history" class="w-5 h-5 text-purple-400"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-base text-slate-100" id="historyModalUserName">היסטוריית חיפושים</h3>
+                        <p class="text-xs text-slate-400" id="historyModalUserEmail">user@example.com</p>
+                    </div>
+                </div>
+                <button onclick="closeUserHistoryModal()" class="w-8 h-8 rounded-xl bg-slate-800/80 hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-white transition-colors">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <!-- Drawer Content: Searches List -->
+            <div class="p-5 overflow-y-auto space-y-3 flex-1 no-scrollbar" id="userHistoryListContainer">
+                <div class="text-center py-8 text-slate-400">טוען היסטוריה...</div>
+            </div>
+
+            <!-- Drawer Footer -->
+            <div class="p-4 border-t border-slate-800 bg-slate-900/40 flex items-center justify-between text-xs text-slate-400">
+                <span>סה"כ חיפושים שנמצאו: <strong id="historyModalCount" class="text-purple-300">0</strong></span>
+                <button onclick="closeUserHistoryModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold transition-all">
+                    סגור
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Change Plan Tier Modal -->
+    <div id="changePlanModalBackdrop" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div id="changePlanModalSheet" class="bottom-sheet hidden-sheet w-full sm:max-w-md bg-[#0E1322] border-t sm:border border-slate-700/80 rounded-t-3xl sm:rounded-2xl p-5 shadow-2xl space-y-4">
+            <div class="w-12 h-1.5 bg-slate-700 rounded-full mx-auto mb-2 sm:hidden"></div>
+            
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="sparkles" class="w-5 h-5 text-amber-400"></i>
+                    <h3 class="font-bold text-base text-white">שינוי מסלול מנוי</h3>
+                </div>
+                <button onclick="closeChangePlanModal()" class="text-slate-400 hover:text-white">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <div>
+                <p class="text-xs text-slate-300">
+                    עדכון מסלול עבור: <strong id="changePlanUserLabel" class="text-purple-300"></strong>
+                </p>
+                <input type="hidden" id="changePlanUserId" value="">
+            </div>
+
+            <div class="space-y-2">
+                <label class="block text-xs font-semibold text-slate-400">בחר מסלול חדש:</label>
+                <select id="newPlanSelect" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-purple-500">
+                    <option value="free">מנוי חינמי (10 חיפושים בחודש) - 0 ₪</option>
+                    <option value="starter">מנוי בסיסי Starter (20 חיפושים בחודש) - 10 ₪</option>
+                    <option value="pro">מנוי Pro מומלץ (40 חיפושים בחודש) - 20 ₪</option>
+                    <option value="vip">מנוי VIP ללא דאגות (100 חיפושים בחודש) - 30 ₪</option>
+                    <option value="admin">👑 מנהל מערכת (ללא הגבלה + הרשאת Admin) - 0 ₪</option>
+                </select>
+            </div>
+
+            <div class="pt-2 flex gap-2">
+                <button onclick="submitChangePlan()" class="flex-1 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs shadow-md shadow-purple-900/30 transition-all">
+                    שמור ועדכן מסלול
+                </button>
+                <button onclick="closeChangePlanModal()" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-all">
+                    ביטול
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Change User Password Modal -->
+    <div id="changePasswordModalBackdrop" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div id="changePasswordModalSheet" class="bottom-sheet hidden-sheet w-full sm:max-w-md bg-[#0E1322] border-t sm:border border-slate-700/80 rounded-t-3xl sm:rounded-2xl p-5 shadow-2xl space-y-4">
+            <div class="w-12 h-1.5 bg-slate-700 rounded-full mx-auto mb-2 sm:hidden"></div>
+            
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-sky-500/15 border border-sky-500/30 flex items-center justify-center">
+                        <i data-lucide="key" class="w-4 h-4 text-sky-400"></i>
+                    </div>
+                    <h3 class="font-bold text-base text-white">שינוי סיסמת משתמש</h3>
+                </div>
+                <button onclick="closeChangePasswordModal()" class="text-slate-400 hover:text-white">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <div>
+                <p class="text-xs text-slate-300">
+                    עדכון סיסמה עבור: <strong id="changePasswordUserLabel" class="text-sky-300"></strong>
+                </p>
+                <input type="hidden" id="changePasswordUserId" value="">
+            </div>
+
+            <div class="space-y-2">
+                <label class="block text-xs font-semibold text-slate-400">סיסמה חדשה (מינימום 4 תווים):</label>
+                <div class="relative">
+                    <input type="text" id="newPasswordInput" placeholder="הזן סיסמה חדשה..."
+                           class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-sky-500">
+                </div>
+                <p class="text-[11px] text-slate-500">שינוי הסיסמה יעדכן את המשתמש וינתק סשנים ישנים לצורכי אבטחה.</p>
+            </div>
+
+            <div class="pt-2 flex gap-2">
+                <button onclick="submitChangePassword()" class="flex-1 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs shadow-md shadow-sky-900/30 transition-all">
+                    שמור ועדכן סיסמה
+                </button>
+                <button onclick="closeChangePasswordModal()" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-all">
+                    ביטול
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="adminToastContainer" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 pointer-events-none w-11/12 max-w-sm"></div>
+
+    <!-- Core Admin Dashboard Script -->
+    <script>
+        let rawUsersData = [];
+        let rawBitPaymentsData = [];
+        let planChartInstance = null;
+        let destChartInstance = null;
+
+        // Initialize Lucide icons
+        function refreshIcons() {
+            if (window.lucide) {
+                window.lucide.createIcons();
+            }
+        }
+
+        // Show Toast Notification
+        function showAdminToast(message, type = 'success') {
+            const container = document.getElementById('adminToastContainer');
+            const toast = document.createElement('div');
+            const isSuccess = type === 'success';
+            const isError = type === 'error';
+
+            toast.className = `p-3.5 rounded-xl shadow-xl border text-xs font-semibold flex items-center gap-2.5 pointer-events-auto transform transition-all duration-300 translate-y-4 opacity-0 ${
+                isSuccess ? 'bg-slate-900/95 border-emerald-500/40 text-emerald-300' :
+                isError ? 'bg-slate-900/95 border-red-500/40 text-red-300' :
+                'bg-slate-900/95 border-purple-500/40 text-purple-300'
+            }`;
+
+            const iconName = isSuccess ? 'check-circle' : (isError ? 'alert-triangle' : 'info');
+            toast.innerHTML = `<i data-lucide="${iconName}" class="w-4 h-4 shrink-0"></i><span>${message}</span>`;
+            container.appendChild(toast);
+            refreshIcons();
+
+            requestAnimationFrame(() => {
+                toast.classList.remove('translate-y-4', 'opacity-0');
+            });
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        // Switch Tabs (Overview, Users, Bit, Searches, Alerts)
+        function switchAdminTab(tabName) {
+            ['overview', 'users', 'bit', 'searches', 'alerts'].forEach(t => {
+                const sec = document.getElementById(`section-${t}`);
+                const btn = document.getElementById(`tabBtn-${t}`);
+                if (t === tabName) {
+                    if (sec) sec.classList.remove('hidden');
+                    if (btn) {
+                        btn.classList.add('bg-purple-600', 'text-white', 'shadow-sm');
+                        btn.classList.remove('text-slate-400');
+                    }
+                } else {
+                    if (sec) sec.classList.add('hidden');
+                    if (btn) {
+                        btn.classList.remove('bg-purple-600', 'text-white', 'shadow-sm');
+                        btn.classList.add('text-slate-400');
+                    }
+                }
+            });
+            if (tabName === 'searches') {
+                fetchGlobalSearches(false);
+            }
+            refreshIcons();
+        }
+
+        // Check Admin Auth on Page Load
+        async function checkAdminAuth() {
+            try {
+                const res = await fetch('/api/auth/me');
+                const data = await res.json();
+                if (!data.authenticated || !data.user || !data.user.is_admin) {
+                    document.getElementById('unauthorizedBox').classList.remove('hidden');
+                    document.getElementById('adminContent').classList.add('hidden');
+                    refreshIcons();
+                    return false;
+                }
+                document.getElementById('adminEmailDisplay').innerText = data.user.email;
+                return true;
+            } catch (e) {
+                console.error("Auth check failed:", e);
+                document.getElementById('unauthorizedBox').classList.remove('hidden');
+                document.getElementById('adminContent').classList.add('hidden');
+                refreshIcons();
+                return false;
+            }
+        }
+
+        // Fetch Overview KPIs & Charts
+        async function fetchOverview() {
+            try {
+                const res = await fetch('/api/admin/overview');
+                if (!res.ok) throw new Error("שגיאה בטעינת נתוני מערכת");
+                const data = await res.json();
+                
+                // Populate KPIs
+                const k = data.kpis;
+                document.getElementById('kpiTotalUsers').innerText = k.total_users;
+                document.getElementById('kpiActiveUsers24h').innerText = k.active_users_24h;
+                document.getElementById('kpiActiveUsers7d').innerText = k.active_users_7d;
+                document.getElementById('kpiTotalSearches').innerText = k.total_searches;
+                document.getElementById('kpiSearches24h').innerText = k.searches_24h;
+                document.getElementById('kpiAvgSearches').innerText = k.avg_searches_per_user;
+                document.getElementById('kpiTotalRevenue').innerText = Math.round(k.total_revenue_ils);
+                document.getElementById('kpiPayingSubscribers').innerText = k.paying_subscribers;
+                document.getElementById('kpiConversionRate').innerText = k.conversion_rate;
+                document.getElementById('kpiDepletedCount').innerText = k.depleted_users_count;
+
+                // Pending Bit Payments
+                const pendingBit = k.pending_bit_payments || 0;
+                const kpiPendingBitEl = document.getElementById('kpiPendingBit');
+                if (kpiPendingBitEl) kpiPendingBitEl.innerText = pendingBit;
+                const badgeEl = document.getElementById('pendingBitBadge');
+                if (badgeEl) {
+                    badgeEl.innerText = pendingBit;
+                    if (pendingBit > 0) {
+                        badgeEl.classList.remove('hidden');
+                    } else {
+                        badgeEl.classList.add('hidden');
+                    }
+                }
+
+                // Top Destination
+                if (data.top_destinations && data.top_destinations.length > 0) {
+                    const top = data.top_destinations[0];
+                    document.getElementById('kpiTopDestCode').innerText = top.destination;
+                    document.getElementById('kpiTopDestCount').innerText = `${top.count} חיפושים`;
+                    document.getElementById('kpiTopDestAvgPrice').innerText = top.avg_price ? `₪${top.avg_price}` : '-';
+                }
+
+                // Render Charts
+                renderPlanChart(data.plan_distribution);
+                renderDestChart(data.top_destinations);
+
+            } catch (err) {
+                console.error(err);
+                showAdminToast("שגיאה בטעינת נתוני סקירה: " + err.message, "error");
+            }
+        }
+
+        // Render Plan Distribution Chart (Chart.js)
+        function renderPlanChart(planData) {
+            const ctx = document.getElementById('planDistributionChart');
+            if (!ctx) return;
+
+            if (planChartInstance) {
+                planChartInstance.destroy();
+            }
+
+            const labels = planData.map(p => p.plan_name);
+            const counts = planData.map(p => p.count);
+            const colors = [
+                '#9333EA', // purple
+                '#38BDF8', // sky
+                '#6366F1', // indigo
+                '#F59E0B', // amber
+                '#10B981'  // emerald
+            ];
+
+            planChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: counts,
+                        backgroundColor: colors.slice(0, counts.length),
+                        borderColor: '#0A0D14',
+                        borderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    cutout: '68%'
+                }
+            });
+
+            // Legend
+            const legendEl = document.getElementById('planDistributionLegend');
+            legendEl.innerHTML = planData.map((p, idx) => `
+                <div class="flex items-center gap-1.5">
+                    <span class="w-2.5 h-2.5 rounded-full" style="background-color: ${colors[idx % colors.length]}"></span>
+                    <span class="truncate">${p.plan_name}: <strong class="text-white">${p.count}</strong></span>
+                </div>
+            `).join('');
+        }
+
+        // Render Top Destinations Chart (Horizontal Bar)
+        function renderDestChart(destData) {
+            const ctx = document.getElementById('topDestinationsChart');
+            if (!ctx) return;
+
+            if (destChartInstance) {
+                destChartInstance.destroy();
+            }
+
+            const labels = destData.map(d => d.destination);
+            const counts = destData.map(d => d.count);
+
+            destChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'כמות חיפושים',
+                        data: counts,
+                        backgroundColor: 'rgba(99, 102, 241, 0.75)',
+                        borderColor: '#6366F1',
+                        borderWidth: 1.5,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: { color: '#94A3B8' }
+                        },
+                        y: {
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: { color: '#94A3B8', stepSize: 1 }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Fetch All Users
+        async function fetchUsers() {
+            try {
+                const res = await fetch('/api/admin/users');
+                if (!res.ok) throw new Error("שגיאה בטעינת רשימת משתמשים");
+                const data = await res.json();
+                rawUsersData = data.users || [];
+                
+                document.getElementById('mobileUsersCount').innerText = rawUsersData.length;
+                document.getElementById('usersListTotalBadge').innerText = rawUsersData.length;
+
+                renderUsersList(rawUsersData);
+            } catch (err) {
+                console.error(err);
+                showAdminToast("שגיאה בטעינת משתמשים: " + err.message, "error");
+            }
+        }
+
+        // Plan Badge Helper
+        function getPlanBadgeHTML(tier, planName, price) {
+            if (tier === 'admin') {
+                return `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-500/15 text-purple-300 border border-purple-500/30">👑 מנהל (Admin)</span>`;
+            }
+            if (tier === 'vip') {
+                return `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30">VIP (${price} ₪)</span>`;
+            }
+            if (tier === 'pro') {
+                return `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-500/15 text-indigo-300 border border-indigo-500/30">Pro (${price} ₪)</span>`;
+            }
+            if (tier === 'starter') {
+                return `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-sky-500/15 text-sky-300 border border-sky-500/30">בסיסי (${price} ₪)</span>`;
+            }
+            return `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700">חינמי (0 ₪)</span>`;
+        }
+
+        function escapeJs(str) {
+            if (!str) return '';
+            return String(str).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        }
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        // Render Users Table and Mobile Cards
+        function renderUsersList(users) {
+            const tableBody = document.getElementById('desktopUsersTableBody');
+            const mobileContainer = document.getElementById('mobileUsersCardsList');
+
+            if (!users || users.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-400">לא נמצאו משתמשים התואמים לסינון</td></tr>`;
+                mobileContainer.innerHTML = `<div class="p-8 text-center text-slate-400">לא נמצאו משתמשים התואמים לסינון</div>`;
+                return;
+            }
+
+            // Desktop Table Rows
+            tableBody.innerHTML = users.map(u => {
+                const isUnlimited = u.unlimited;
+                const isMainAdmin = (u.email === 'xeinok2@gmail.com') || u.is_admin;
+                const isBlocked = !!u.is_blocked;
+                const safeName = escapeJs(u.full_name || u.email);
+                const safeEmail = escapeJs(u.email);
+
+                const statusBadge = isBlocked ?
+                    `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40">🚫 חסום</span>` :
+                    `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">🟢 פעיל</span>`;
+
+                const quotaDisplay = isUnlimited ? 
+                    `<span class="font-bold text-amber-300">ללא הגבלה 👑</span>` :
+                    `<div class="space-y-1">
+                        <div class="flex items-center justify-between text-[11px] font-semibold text-slate-300">
+                            <span>נוצלו ${u.searches_used} מתוך ${u.searches_limit}</span>
+                            <span class="${u.is_depleted ? 'text-red-400' : 'text-emerald-400'}">${u.searches_remaining} נותרו</span>
+                        </div>
+                        <div class="w-32 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                            <div class="h-full ${u.is_depleted ? 'bg-red-500' : 'bg-purple-500'} rounded-full" style="width: ${u.percentage_used}%"></div>
+                        </div>
+                    </div>`;
+
+                const formattedDate = u.last_login ? u.last_login.split('T')[0] : (u.created_at ? u.created_at.split('T')[0] : '-');
+
+                return `
+                    <tr class="hover:bg-slate-800/40 transition-colors ${isBlocked ? 'bg-rose-950/15' : ''}">
+                        <td class="p-3">
+                            <div class="font-bold text-slate-100 flex items-center gap-1.5">
+                                ${u.is_admin ? '<i data-lucide="crown" class="w-3.5 h-3.5 text-amber-400"></i>' : ''}
+                                <span>${escapeHtml(u.full_name || 'משתמש ללא שם')}</span>
+                                ${statusBadge}
+                            </div>
+                            <div class="text-[11px] text-slate-400 font-mono">${escapeHtml(u.email)}</div>
+                        </td>
+                        <td class="p-3">
+                            ${getPlanBadgeHTML(u.plan_tier, u.plan_name, u.plan_price)}
+                        </td>
+                        <td class="p-3">
+                            ${quotaDisplay}
+                        </td>
+                        <td class="p-3">
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-slate-800 font-bold text-slate-200">
+                                <i data-lucide="search" class="w-3 h-3 text-slate-400"></i>
+                                ${u.logged_searches_count}
+                            </span>
+                        </td>
+                        <td class="p-3 text-slate-400 text-[11px]">
+                            ${formattedDate}
+                        </td>
+                        <td class="p-3 text-center">
+                            <div class="flex items-center justify-center gap-1 flex-wrap">
+                                <button onclick="openUserHistory(${u.id})" class="px-2 py-1.5 rounded-lg bg-purple-600/20 hover:bg-purple-600 text-purple-300 hover:text-white border border-purple-500/30 text-xs font-semibold transition-all" title="צפה בהיסטוריית חיפושים">
+                                    היסטוריה
+                                </button>
+                                <button onclick="resetUserQuota(${u.id}, '${safeEmail}')" class="px-2 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-xs font-semibold transition-all" title="אפס מכסה">
+                                    אפס מכסה
+                                </button>
+                                <button onclick="openChangePlanModal(${u.id}, '${safeName}', '${u.plan_tier}')" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-amber-400 border border-slate-700 transition-all" title="שנה מנוי">
+                                    <i data-lucide="settings-2" class="w-3.5 h-3.5"></i>
+                                </button>
+                                <button onclick="openChangePasswordModal(${u.id}, '${safeName}')" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-sky-400 border border-slate-700 transition-all" title="שנה סיסמה">
+                                    <i data-lucide="key" class="w-3.5 h-3.5"></i>
+                                </button>
+                                ${!isMainAdmin ? `
+                                    <button onclick="toggleBlockUser(${u.id}, '${safeName}', ${isBlocked})" 
+                                            class="p-1.5 rounded-lg ${isBlocked ? 'bg-emerald-950/60 hover:bg-emerald-800 text-emerald-300 border border-emerald-700' : 'bg-amber-950/40 hover:bg-amber-800 text-amber-300 border border-amber-700/60'} transition-all" 
+                                            title="${isBlocked ? 'בטל חסימת משתמש' : 'חסום משתמש'}">
+                                        <i data-lucide="${isBlocked ? 'shield-check' : 'shield-ban'}" class="w-3.5 h-3.5"></i>
+                                    </button>
+                                    <button onclick="deleteUser(${u.id}, '${safeName}')" class="p-1.5 rounded-lg bg-rose-950/40 hover:bg-rose-800 text-rose-300 border border-rose-700/60 transition-all" title="מחק משתמש לצמיתות">
+                                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            // Mobile Cards View
+            mobileContainer.innerHTML = users.map(u => {
+                const isUnlimited = u.unlimited;
+                const isMainAdmin = (u.email === 'xeinok2@gmail.com') || u.is_admin;
+                const isBlocked = !!u.is_blocked;
+                const safeName = escapeJs(u.full_name || u.email);
+                const safeEmail = escapeJs(u.email);
+
+                const statusBadge = isBlocked ? 
+                    `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40">🚫 חסום</span>` :
+                    `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">🟢 פעיל</span>`;
+
+                return `
+                    <div class="glass-card rounded-2xl p-4 space-y-3 border ${isBlocked ? 'border-rose-900/60 bg-rose-950/15' : 'border-slate-800'}">
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <div class="font-bold text-slate-100 flex items-center gap-1.5">
+                                    ${u.is_admin ? '<i data-lucide="crown" class="w-4 h-4 text-amber-400"></i>' : ''}
+                                    <span>${escapeHtml(u.full_name || 'משתמש')}</span>
+                                    ${statusBadge}
+                                </div>
+                                <div class="text-xs text-slate-400 font-mono">${escapeHtml(u.email)}</div>
+                            </div>
+                            ${getPlanBadgeHTML(u.plan_tier, u.plan_name, u.plan_price)}
+                        </div>
+
+                        <!-- Quota stats -->
+                        <div class="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800/80 text-xs">
+                            <div class="flex items-center justify-between mb-1.5">
+                                <span class="text-slate-400">מכסת חיפושים חודשית:</span>
+                                ${isUnlimited ? 
+                                    '<strong class="text-amber-300 font-bold">ללא הגבלה 👑</strong>' : 
+                                    `<strong class="${u.is_depleted ? 'text-red-400' : 'text-emerald-400'} font-bold">${u.searches_remaining} נותרו מתוך ${u.searches_limit}</strong>`
+                                }
+                            </div>
+                            ${!isUnlimited ? `
+                                <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                                    <div class="h-full ${u.is_depleted ? 'bg-red-500' : 'bg-purple-500'} rounded-full" style="width: ${u.percentage_used}%"></div>
+                                </div>
+                            ` : ''}
+                        </div>
+
+                        <!-- Actions row 1: History, Reset Quota, Plan -->
+                        <div class="flex items-center gap-2 pt-1">
+                            <button onclick="openUserHistory(${u.id})" class="flex-1 py-2 rounded-xl bg-purple-600/20 hover:bg-purple-600 text-purple-300 hover:text-white border border-purple-500/30 text-xs font-bold transition-all flex items-center justify-center gap-1">
+                                <i data-lucide="history" class="w-3.5 h-3.5"></i>
+                                <span>היסטוריה (${u.logged_searches_count})</span>
+                            </button>
+                            <button onclick="resetUserQuota(${u.id}, '${safeEmail}')" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs font-semibold transition-all">
+                                אפס מכסה
+                            </button>
+                            <button onclick="openChangePlanModal(${u.id}, '${safeName}', '${u.plan_tier}')" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 border border-slate-700 transition-all" title="שנה מנוי">
+                                <i data-lucide="settings-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+
+                        <!-- Actions row 2: Password, Block, Delete -->
+                        <div class="flex items-center gap-2 pt-1 border-t border-slate-800/60 text-xs">
+                            <button onclick="openChangePasswordModal(${u.id}, '${safeName}')" class="flex-1 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-sky-300 hover:text-white border border-slate-700 font-semibold transition-all flex items-center justify-center gap-1.5">
+                                <i data-lucide="key" class="w-3.5 h-3.5"></i>
+                                <span>שנה סיסמה</span>
+                            </button>
+                            ${!isMainAdmin ? `
+                                <button onclick="toggleBlockUser(${u.id}, '${safeName}', ${isBlocked})" class="px-3 py-1.5 rounded-xl ${isBlocked ? 'bg-emerald-950/60 text-emerald-300 border border-emerald-700' : 'bg-amber-950/40 text-amber-300 border border-amber-700/60'} font-semibold transition-all flex items-center gap-1">
+                                    <i data-lucide="${isBlocked ? 'shield-check' : 'shield-ban'}" class="w-3.5 h-3.5"></i>
+                                    <span>${isBlocked ? 'שחרר' : 'חסום'}</span>
+                                </button>
+                                <button onclick="deleteUser(${u.id}, '${safeName}')" class="p-2 rounded-xl bg-rose-950/40 hover:bg-rose-800 text-rose-300 border border-rose-700/60 transition-all" title="מחק לצמיתות">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            refreshIcons();
+        }
+
+        // Filter Users
+        function filterUsersList() {
+            const query = (document.getElementById('userSearchInput').value || '').trim().toLowerCase();
+            const tier = document.getElementById('userTierFilter').value;
+
+            const filtered = rawUsersData.filter(u => {
+                const matchQuery = !query || 
+                    (u.email && u.email.toLowerCase().includes(query)) ||
+                    (u.full_name && u.full_name.toLowerCase().includes(query));
+
+                const matchTier = (tier === 'all') || (u.plan_tier === tier);
+                return matchQuery && matchTier;
+            });
+
+            renderUsersList(filtered);
+        }
+
+        // Reset User Quota
+        async function resetUserQuota(userId, email) {
+            if (!confirm(`האם לאפס את מכסת החיפושים עבור ${email} ל-0?`)) return;
+
+            try {
+                const res = await fetch(`/api/admin/users/${userId}/reset-quota`, { method: 'POST' });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || "האיפוס נכשל");
+                
+                showAdminToast(data.message, "success");
+                loadAdminData(false);
+            } catch (err) {
+                console.error(err);
+                showAdminToast("שגיאה באיפוס מכסה: " + err.message, "error");
+            }
+        }
+
+        // Open Change Plan Modal
+        function openChangePlanModal(userId, userLabel, currentTier) {
+            document.getElementById('changePlanUserId').value = userId;
+            document.getElementById('changePlanUserLabel').innerText = userLabel;
+            document.getElementById('newPlanSelect').value = currentTier || 'free';
+
+            const backdrop = document.getElementById('changePlanModalBackdrop');
+            const sheet = document.getElementById('changePlanModalSheet');
+            backdrop.classList.remove('hidden');
+            setTimeout(() => sheet.classList.remove('hidden-sheet'), 20);
+            refreshIcons();
+        }
+
+        function closeChangePlanModal() {
+            const backdrop = document.getElementById('changePlanModalBackdrop');
+            const sheet = document.getElementById('changePlanModalSheet');
+            sheet.classList.add('hidden-sheet');
+            setTimeout(() => backdrop.classList.add('hidden'), 250);
+        }
+
+        // Submit Change Plan
+        async function submitChangePlan() {
+            const userId = document.getElementById('changePlanUserId').value;
+            const newTier = document.getElementById('newPlanSelect').value;
+
+            try {
+                const res = await fetch(`/api/admin/users/${userId}/set-plan`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ plan_tier: newTier })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || "העדכון נכשל");
+
+                closeChangePlanModal();
+                showAdminToast(data.message, "success");
+                loadAdminData(false);
+            } catch (err) {
+                console.error(err);
+                showAdminToast("שגיאה בעדכון מסלול: " + err.message, "error");
+            }
+        }
+
+        // Open User History Modal
+        async function openUserHistory(userId) {
+            const backdrop = document.getElementById('userHistoryModalBackdrop');
+            const sheet = document.getElementById('userHistoryModalSheet');
+            const container = document.getElementById('userHistoryListContainer');
+
+            backdrop.classList.remove('hidden');
+            setTimeout(() => sheet.classList.remove('hidden-sheet'), 20);
+            container.innerHTML = `<div class="text-center py-10 text-slate-400">טוען היסטוריית חיפושים...</div>`;
+
+            try {
+                const res = await fetch(`/api/admin/users/${userId}/history`);
+                if (!res.ok) throw new Error("שגיאה בטעינת היסטוריית החיפושים");
+                const data = await res.json();
+
+                document.getElementById('historyModalUserName').innerText = data.user.full_name || 'משתמש';
+                document.getElementById('historyModalUserEmail').innerText = `${data.user.email} &bull; ${data.user.plan_name}`;
+                document.getElementById('historyModalCount').innerText = data.total_searches;
+
+                if (!data.searches || data.searches.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center py-12 space-y-2">
+                            <i data-lucide="plane" class="w-8 h-8 mx-auto text-slate-600"></i>
+                            <p class="text-sm text-slate-400">משתמש זה עדיין לא ביצע חיפושי טיסות במערכת.</p>
+                        </div>
+                    `;
+                    refreshIcons();
+                    return;
+                }
+
+                container.innerHTML = data.searches.map(s => {
+                    const priceSym = (s.currency === 'ILS') ? '₪' : '$';
+                    const promptHtml = s.prompt ? `
+                        <div class="mt-2 p-2 rounded-lg bg-slate-950/60 border border-slate-800 text-[11px] text-purple-200">
+                            <span class="text-slate-400 font-semibold">שאילתת משתמש:</span> "${s.prompt}"
+                        </div>
+                    ` : '';
+
+                    return `
+                        <div class="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 space-y-2">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    <span class="px-2 py-0.5 rounded font-black text-xs bg-purple-500/15 text-purple-300 border border-purple-500/30">
+                                        ${s.origin} &rarr; ${s.destination}
+                                    </span>
+                                    <span class="text-xs text-slate-300 font-semibold">${s.departure_date} ${s.return_date ? `עד ${s.return_date}` : ''}</span>
+                                    <span class="text-[11px] text-slate-400">${s.trip_type === 'round-trip' ? 'הלוך ושוב' : 'כיוון אחד'}</span>
+                                </div>
+                                <div class="text-left">
+                                    <span class="text-base font-black text-emerald-400">${priceSym}${s.lowest_price || '-'}</span>
+                                </div>
+                            </div>
+                            ${promptHtml}
+                            <div class="flex items-center justify-between text-[11px] text-slate-500 pt-1">
+                                <span>תוצאות: ${s.results_count || 0} הצעות</span>
+                                <span>${s.created_at || ''}</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                refreshIcons();
+
+            } catch (err) {
+                console.error(err);
+                container.innerHTML = `<div class="text-center py-8 text-red-400">שגיאה: ${err.message}</div>`;
+            }
+        }
+
+        function closeUserHistoryModal() {
+            const backdrop = document.getElementById('userHistoryModalBackdrop');
+            const sheet = document.getElementById('userHistoryModalSheet');
+            sheet.classList.add('hidden-sheet');
+            setTimeout(() => backdrop.classList.add('hidden'), 250);
+        }
+
+        // Change Password Modal & Execution
+        function openChangePasswordModal(userId, userLabel) {
+            document.getElementById('changePasswordUserId').value = userId;
+            document.getElementById('changePasswordUserLabel').innerText = userLabel;
+            document.getElementById('newPasswordInput').value = '';
+
+            const backdrop = document.getElementById('changePasswordModalBackdrop');
+            const sheet = document.getElementById('changePasswordModalSheet');
+            backdrop.classList.remove('hidden');
+            setTimeout(() => sheet.classList.remove('hidden-sheet'), 20);
+            refreshIcons();
+        }
+
+        function closeChangePasswordModal() {
+            const backdrop = document.getElementById('changePasswordModalBackdrop');
+            const sheet = document.getElementById('changePasswordModalSheet');
+            sheet.classList.add('hidden-sheet');
+            setTimeout(() => backdrop.classList.add('hidden'), 250);
+        }
+
+        async function submitChangePassword() {
+            const userId = document.getElementById('changePasswordUserId').value;
+            const newPassword = (document.getElementById('newPasswordInput').value || '').trim();
+
+            if (!newPassword || newPassword.length < 4) {
+                showAdminToast("הסיסמה חייבת להכיל לפחות 4 תווים", "error");
+                return;
+            }
+
+            try {
+                const res = await fetch(`/api/admin/users/${userId}/change-password`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ new_password: newPassword })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || "שגיאה בעדכון הסיסמה");
+
+                closeChangePasswordModal();
+                showAdminToast(data.message, "success");
+                fetchUsers();
+            } catch (err) {
+                console.error(err);
+                showAdminToast("שגיאה בעדכון סיסמה: " + err.message, "error");
+            }
+        }
+
+        // Toggle Block User
+        async function toggleBlockUser(userId, userLabel, isCurrentlyBlocked) {
+            const actionText = isCurrentlyBlocked ? "לבטל את החסימה של" : "לחסום את";
+            const confirmMsg = isCurrentlyBlocked ?
+                `האם לבטל את החסימה עבור המשתמש "${userLabel}"? המשתמש יוכל לשוב ולהתחבר לאתר כרגיל.` :
+                `האם לחסום את המשתמש "${userLabel}"?\nהחשבון יינעל מידית, כל הסשנים הפעילים ינותקו והמשתמש לא יוכל להתחבר או לחפש.`;
+
+            if (!confirm(confirmMsg)) return;
+
+            try {
+                const res = await fetch(`/api/admin/users/${userId}/toggle-block`, { method: 'POST' });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || "פעולה נכשלה");
+
+                showAdminToast(data.message, data.is_blocked ? "info" : "success");
+                fetchUsers();
+            } catch (err) {
+                console.error(err);
+                showAdminToast("שגיאה בשינוי סטטוס חסימה: " + err.message, "error");
+            }
+        }
+
+        // Delete User
+        async function deleteUser(userId, userLabel) {
+            const confirmMsg = `⚠️ אזהרה: האם אתה בטוח לחלוטין שברצונך למחוק לצמיתות את המשתמש "${userLabel}"?\n\nפעולה זו תמחק את כל פרטי המשתמש, הסשנים והתשלומים שלו מהמערכת ולא ניתנת לביטול!`;
+            if (!confirm(confirmMsg)) return;
+
+            try {
+                const res = await fetch(`/api/admin/users/${userId}`, { method: 'DELETE' });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || "מחיקת המשתמש נכשלה");
+
+                showAdminToast(data.message, "success");
+                loadAdminData(false);
+            } catch (err) {
+                console.error(err);
+                showAdminToast("שגיאה במחיקת משתמש: " + err.message, "error");
+            }
+        }
+
+        // --- Search History & Filtering ---
+        let globalSearchesTimer = null;
+
+        async function fetchGlobalSearches(showToast = false) {
+            const icon = document.getElementById('searchesRefreshIcon');
+            if (icon) icon.classList.add('animate-spin');
+
+            const feedEl = document.getElementById('globalSearchesFeed');
+            
+            const q = (document.getElementById('searchesFilterQuery')?.value || '').trim();
+            const dest = document.getElementById('searchesFilterDest')?.value || 'all';
+            const userEmail = document.getElementById('searchesFilterUser')?.value || 'all';
+            const fromDate = document.getElementById('searchesFilterFromDate')?.value || '';
+            const toDate = document.getElementById('searchesFilterToDate')?.value || '';
+            const directOnly = document.getElementById('searchesFilterDirect')?.checked || false;
+
+            const hasActiveFilters = !!(q || (dest !== 'all') || (userEmail !== 'all') || fromDate || toDate || directOnly);
+            const pillEl = document.getElementById('searchesActiveFiltersPill');
+            if (pillEl) {
+                if (hasActiveFilters) pillEl.classList.remove('hidden');
+                else pillEl.classList.add('hidden');
+            }
+
+            const params = new URLSearchParams();
+            if (q) params.append('q', q);
+            if (dest && dest !== 'all') params.append('destination', dest);
+            if (userEmail && userEmail !== 'all') params.append('user_email', userEmail);
+            if (fromDate) params.append('from_date', fromDate);
+            if (toDate) params.append('to_date', toDate);
+            if (directOnly) params.append('direct_only', 'true');
+            // If no limit is sent, backend returns all searches!
+
+            try {
+                const res = await fetch(`/api/admin/searches?${params.toString()}`);
+                if (!res.ok) throw new Error("שגיאה בטעינת היסטוריית חיפושים");
+                const data = await res.json();
+
+                // Update count badge
+                const badge = document.getElementById('searchesCountBadge');
+                if (badge) {
+                    badge.innerText = `מציג ${data.filtered_count} מתוך ${data.total_count} חיפושים`;
+                }
+
+                // Populate destination select if needed
+                const destSelect = document.getElementById('searchesFilterDest');
+                if (destSelect && data.available_destinations) {
+                    const currentVal = destSelect.value;
+                    let html = `<option value="all">כל היעדים (${data.available_destinations.length})</option>`;
+                    data.available_destinations.forEach(d => {
+                        html += `<option value="${d}" ${d === currentVal ? 'selected' : ''}>${d}</option>`;
+                    });
+                    destSelect.innerHTML = html;
+                }
+
+                // Populate users select if needed
+                const userSelect = document.getElementById('searchesFilterUser');
+                if (userSelect && data.available_users) {
+                    const currentVal = userSelect.value;
+                    let html = `<option value="all">כל המשתמשים (${data.available_users.length})</option>`;
+                    data.available_users.forEach(u => {
+                        html += `<option value="${u}" ${u === currentVal ? 'selected' : ''}>${u}</option>`;
+                    });
+                    userSelect.innerHTML = html;
+                }
+
+                renderSearchesFeed(data.searches || []);
+
+                if (showToast) {
+                    showAdminToast(`היסטוריית החיפושים סונכרנה (${data.filtered_count} תוצאות)`, "success");
+                }
+            } catch (err) {
+                console.error(err);
+                if (feedEl) feedEl.innerHTML = `<div class="p-8 text-center text-red-400">שגיאה בטעינת חיפושים: ${err.message}</div>`;
+                showAdminToast("שגיאה בטעינת חיפושים: " + err.message, "error");
+            } finally {
+                if (icon) icon.classList.remove('animate-spin');
+            }
+        }
+
+        function debounceSearchFilters() {
+            clearTimeout(globalSearchesTimer);
+            globalSearchesTimer = setTimeout(() => {
+                fetchGlobalSearches(false);
+            }, 300);
+        }
+
+        function applySearchFilters() {
+            fetchGlobalSearches(false);
+        }
+
+        function resetSearchFilters() {
+            const qEl = document.getElementById('searchesFilterQuery');
+            const destEl = document.getElementById('searchesFilterDest');
+            const userEl = document.getElementById('searchesFilterUser');
+            const fromEl = document.getElementById('searchesFilterFromDate');
+            const toEl = document.getElementById('searchesFilterToDate');
+            const directEl = document.getElementById('searchesFilterDirect');
+
+            if (qEl) qEl.value = '';
+            if (destEl) destEl.value = 'all';
+            if (userEl) userEl.value = 'all';
+            if (fromEl) fromEl.value = '';
+            if (toEl) toEl.value = '';
+            if (directEl) directEl.checked = false;
+
+            fetchGlobalSearches(true);
+        }
+
+        // Render Recent Searches Feed
+        function renderSearchesFeed(searches) {
+            const container = document.getElementById('globalSearchesFeed');
+            if (!container) return;
+
+            if (!searches || searches.length === 0) {
+                container.innerHTML = `
+                    <div class="p-12 text-center text-slate-400 space-y-2">
+                        <i data-lucide="search-x" class="w-8 h-8 mx-auto text-slate-500"></i>
+                        <p class="font-semibold text-slate-300">לא נמצאו חיפושים התואמים לקריטריוני הסינון שנבחרו.</p>
+                        <button onclick="resetSearchFilters()" class="text-sky-400 hover:underline text-xs font-semibold">נקה פילטרים והצג הכל</button>
+                    </div>`;
+                refreshIcons();
+                return;
+            }
+
+            container.innerHTML = searches.map(s => {
+                const priceSym = (s.currency === 'ILS') ? '₪' : '$';
+                const userTag = s.user_email ? 
+                    `<span class="text-purple-300 font-bold">${escapeHtml(s.user_name || s.user_email)}</span> <span class="text-slate-400 font-mono text-[11px]">(${escapeHtml(s.user_email)})</span>` : 
+                    `<span class="text-slate-400 font-medium">משתמש אורח</span>`;
+
+                const isDirect = !!s.direct_only;
+                const formattedDate = s.created_at ? s.created_at.replace('T', ' ').slice(0, 16) : '-';
+
+                const promptHtml = s.prompt ? `
+                    <div class="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800/80 text-xs text-slate-200">
+                        <div class="text-[10px] text-slate-400 font-semibold mb-0.5 flex items-center gap-1">
+                            <i data-lucide="message-square" class="w-3 h-3 text-sky-400"></i>
+                            <span>בקשת החיפוש המקורית (User Prompt):</span>
+                        </div>
+                        <span class="italic text-sky-200">"${escapeHtml(s.prompt)}"</span>
+                    </div>
+                ` : '';
+
+                const aiSummary = s.ai_recommendation ? `
+                    <div class="p-2.5 rounded-xl bg-purple-950/20 border border-purple-800/30 text-xs text-purple-200">
+                        <div class="text-[10px] text-purple-300 font-semibold mb-0.5 flex items-center gap-1">
+                            <i data-lucide="sparkles" class="w-3 h-3 text-amber-400"></i>
+                            <span>תובנת AI:</span>
+                        </div>
+                        <p class="text-slate-300 leading-relaxed text-[11px]">${escapeHtml(s.ai_recommendation).slice(0, 250)}${s.ai_recommendation.length > 250 ? '...' : ''}</p>
+                    </div>
+                ` : '';
+
+                return `
+                    <div class="glass-card rounded-2xl p-4 border border-slate-800 hover:border-slate-700/80 transition-all space-y-3">
+                        <!-- Header Row -->
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                            <div class="flex items-center gap-2.5 flex-wrap">
+                                <span class="px-2.5 py-1 rounded-xl bg-sky-500/15 text-sky-300 border border-sky-500/30 font-black text-xs">
+                                    ${escapeHtml(s.origin || 'TLV')} ➔ ${escapeHtml(s.destination || '?')}
+                                </span>
+                                ${isDirect ? `
+                                    <span class="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold">
+                                        ✈️ ישירה בלבד
+                                    </span>
+                                ` : `
+                                    <span class="px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 text-[10px]">
+                                        כולל קונקשיין
+                                    </span>
+                                `}
+                                <span class="text-xs text-slate-300 font-semibold">
+                                    ${s.departure_date ? `${s.departure_date}` : ''} ${s.return_date ? `עד ${s.return_date}` : ''}
+                                </span>
+                                <span class="text-[11px] text-slate-400">
+                                    (${s.trip_type === 'round-trip' ? 'הלוך ושוב' : 'כיוון אחד'})
+                                </span>
+                            </div>
+
+                            <div class="flex items-center justify-between sm:justify-end gap-3">
+                                <div class="text-right sm:text-left">
+                                    <span class="text-slate-400 text-[10px] block">מחיר מינימלי</span>
+                                    <span class="font-black text-emerald-400 text-base sm:text-lg">${s.lowest_price ? `${priceSym}${s.lowest_price}` : '-'}</span>
+                                </div>
+                                <span class="px-2 py-1 rounded-lg bg-slate-900 border border-slate-800 text-[11px] font-semibold text-slate-300">
+                                    ${s.results_count || 0} תוצאות
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Prompt & AI -->
+                        ${promptHtml}
+                        ${aiSummary}
+
+                        <!-- Footer Row: User & Date -->
+                        <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-800/60 text-xs">
+                            <div class="flex items-center gap-1.5">
+                                <i data-lucide="user" class="w-3.5 h-3.5 text-slate-400"></i>
+                                <span class="text-slate-400">משתמש:</span>
+                                ${userTag}
+                            </div>
+                            <div class="flex items-center gap-1.5 text-slate-500 text-[11px]">
+                                <i data-lucide="clock" class="w-3 h-3"></i>
+                                <span>${formattedDate}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            refreshIcons();
+        }
+
+        // Fetch All Bit Payments
+        async function fetchBitPayments(showToast = false) {
+            try {
+                const res = await fetch('/api/admin/bit-payments');
+                if (!res.ok) throw new Error("שגיאה בטעינת תשלומי ביט");
+                const data = await res.json();
+                rawBitPaymentsData = data.payments || [];
+                
+                const pendingCount = data.pending_count || 0;
+                const badgeEl = document.getElementById('pendingBitBadge');
+                if (badgeEl) {
+                    badgeEl.innerText = pendingCount;
+                    if (pendingCount > 0) {
+                        badgeEl.classList.remove('hidden');
+                    } else {
+                        badgeEl.classList.add('hidden');
+                    }
+                }
+                const countBadge = document.getElementById('bitPaymentsCountBadge');
+                if (countBadge) {
+                    countBadge.innerText = `${rawBitPaymentsData.length} בקשות (${pendingCount} ממתינות)`;
+                }
+
+                filterBitPayments();
+
+                if (showToast) {
+                    showAdminToast("רשימת תשלומי ביט עודכנה בהצלחה!", "success");
+                }
+            } catch (err) {
+                console.error(err);
+                showAdminToast("שגיאה בטעינת תשלומי ביט: " + err.message, "error");
+            }
+        }
+
+        // Filter Bit Payments
+        function filterBitPayments() {
+            const statusFilter = document.getElementById('bitStatusFilter') ? document.getElementById('bitStatusFilter').value : 'all';
+            const filtered = (statusFilter === 'all') 
+                ? rawBitPaymentsData 
+                : rawBitPaymentsData.filter(p => p.status === statusFilter);
+            renderBitPayments(filtered);
+        }
+
+        // Render Bit Payments Table & Mobile Cards
+        function renderBitPayments(payments) {
+            const tableBody = document.getElementById('desktopBitTableBody');
+            const mobileContainer = document.getElementById('mobileBitCardsList');
+
+            if (!payments || payments.length === 0) {
+                const emptyMsg = `לא נמצאו בקשות תשלום בביט המתאימות לסינון`;
+                tableBody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-slate-400">${emptyMsg}</td></tr>`;
+                mobileContainer.innerHTML = `<div class="p-8 text-center text-slate-400 glass-card rounded-2xl">${emptyMsg}</div>`;
+                return;
+            }
+
+            // Desktop Table Rows
+            tableBody.innerHTML = payments.map(p => {
+                const isPending = p.status === 'pending';
+                const isApproved = p.status === 'approved';
+
+                let statusBadge = '';
+                if (isPending) {
+                    statusBadge = `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30">⏳ ממתין לאישור</span>`;
+                } else if (isApproved) {
+                    statusBadge = `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">✓ מאושר (${p.approved_at ? p.approved_at.split('T')[0] : ''})</span>`;
+                } else {
+                    statusBadge = `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-500/15 text-red-300 border border-red-500/30">✕ נדחה</span>`;
+                }
+
+                let actions = '';
+                if (isPending) {
+                    actions = `
+                        <div class="flex items-center justify-center gap-1.5">
+                            <button onclick="approveBitPayment(${p.id}, '${p.user_email}', '${p.plan_tier}', ${p.amount_ils})" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-sm transition-all active:scale-95 flex items-center gap-1">
+                                <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                                <span>אשר תשלום והפעל</span>
+                            </button>
+                            <button onclick="rejectBitPayment(${p.id})" class="px-2.5 py-1.5 rounded-lg bg-red-600/20 hover:bg-red-600 text-red-300 hover:text-white border border-red-500/30 font-semibold text-xs transition-all active:scale-95" title="דחה תשלום">
+                                <span>דחה</span>
+                            </button>
+                        </div>
+                    `;
+                } else if (isApproved) {
+                    actions = `<span class="text-xs text-emerald-400 font-semibold flex items-center justify-center gap-1"><i data-lucide="check-circle" class="w-3.5 h-3.5"></i> מנוי פעיל</span>`;
+                } else {
+                    actions = `<span class="text-xs text-slate-500">נסגר</span>`;
+                }
+
+                const createdDate = p.created_at ? p.created_at.replace('T', ' ').slice(0, 16) : '-';
+
+                return `
+                    <tr class="hover:bg-slate-800/40 transition-colors">
+                        <td class="p-3">
+                            <span class="font-mono text-purple-300 font-bold">#${p.id}</span>
+                            <div class="text-[11px] text-slate-400">${createdDate}</div>
+                        </td>
+                        <td class="p-3">
+                            <div class="font-bold text-slate-100">${p.user_name || 'משתמש'}</div>
+                            <div class="text-[11px] text-slate-400">${p.user_email}</div>
+                        </td>
+                        <td class="p-3">
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-bold text-xs bg-slate-800 text-slate-200 border border-slate-700">
+                                ${p.plan_name}
+                            </span>
+                        </td>
+                        <td class="p-3">
+                            <span class="text-base font-black text-emerald-400">${p.amount_ils} ₪</span>
+                        </td>
+                        <td class="p-3">
+                            <div class="flex items-center gap-1 font-mono text-amber-300 font-bold text-xs">
+                                <i data-lucide="phone" class="w-3.5 h-3.5 text-slate-400"></i>
+                                <span>${p.sender_phone}</span>
+                            </div>
+                        </td>
+                        <td class="p-3">
+                            <span class="font-mono text-slate-300 text-xs">${p.target_phone || '0524845131'}</span>
+                        </td>
+                        <td class="p-3">
+                            ${statusBadge}
+                        </td>
+                        <td class="p-3 text-center">
+                            ${actions}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            // Mobile Cards View
+            mobileContainer.innerHTML = payments.map(p => {
+                const isPending = p.status === 'pending';
+                const isApproved = p.status === 'approved';
+                const createdDate = p.created_at ? p.created_at.replace('T', ' ').slice(0, 16) : '-';
+
+                return `
+                    <div class="glass-card rounded-2xl p-4 space-y-3 border ${isPending ? 'border-amber-500/40' : 'border-slate-800'}">
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <span class="font-mono text-xs text-purple-300 font-bold">#${p.id}</span>
+                                    <h4 class="font-bold text-sm text-slate-100">${p.user_name || 'משתמש'}</h4>
+                                </div>
+                                <div class="text-xs text-slate-400">${p.user_email}</div>
+                            </div>
+                            <div class="text-left">
+                                <span class="text-xl font-black text-emerald-400">${p.amount_ils} ₪</span>
+                            </div>
+                        </div>
+
+                        <!-- Details breakdown -->
+                        <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800/80 space-y-1.5 text-xs">
+                            <div class="flex items-center justify-between">
+                                <span class="text-slate-400">מסלול מבוקש:</span>
+                                <span class="font-bold text-slate-200">${p.plan_name}</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-slate-400">טלפון שולח (משתמש):</span>
+                                <span class="font-bold text-amber-300 font-mono tracking-wider">${p.sender_phone}</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-slate-400">יעד ביט:</span>
+                                <span class="font-mono text-slate-300">${p.target_phone || '052-4845131'}</span>
+                            </div>
+                            <div class="flex items-center justify-between pt-1 border-t border-slate-800">
+                                <span class="text-slate-400">תאריך פנייה:</span>
+                                <span class="text-[11px] text-slate-400">${createdDate}</span>
+                            </div>
+                        </div>
+
+                        <!-- Status and actions -->
+                        ${isPending ? `
+                            <div class="pt-1 flex gap-2">
+                                <button onclick="approveBitPayment(${p.id}, '${p.user_email}', '${p.plan_tier}', ${p.amount_ils})" class="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:opacity-95 text-white font-bold text-xs shadow-md shadow-emerald-900/40 flex items-center justify-center gap-1.5 active:scale-95 transition">
+                                    <i data-lucide="check" class="w-4 h-4"></i>
+                                    <span>אשר תשלום והפעל מנוי</span>
+                                </button>
+                                <button onclick="rejectBitPayment(${p.id})" class="px-3 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-red-300 border border-slate-700 font-semibold text-xs active:scale-95 transition">
+                                    דחה
+                                </button>
+                            </div>
+                        ` : `
+                            <div class="p-2 rounded-xl text-center text-xs font-semibold ${isApproved ? 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/20' : 'bg-red-500/10 text-red-300 border border-red-500/20'}">
+                                ${isApproved ? `✓ התשלום אושר והמנוי הופעל (${p.approved_at ? p.approved_at.split('T')[0] : ''})` : '✕ התשלום נדחה'}
+                            </div>
+                        `}
+                    </div>
+                `;
+            }).join('');
+
+            refreshIcons();
+        }
+
+        // Approve Bit Payment
+        async function approveBitPayment(paymentId, userEmail, planTier, amount) {
+            if (!confirm(`האם לאשר תשלום ביט #${paymentId} בסך ${amount} ₪ עבור ${userEmail} ולשדרג למסלול ${planTier}?`)) {
+                return;
+            }
+
+            try {
+                const res = await fetch(`/api/admin/bit-payments/${paymentId}/approve`, {
+                    method: 'POST'
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || "אישור התשלום נכשל");
+
+                showAdminToast(data.message || "התשלום אושר והמנוי הופעל בהצלחה!", "success");
+                
+                // Reload dashboard data
+                await Promise.all([fetchBitPayments(), fetchOverview(), fetchUsers()]);
+            } catch (err) {
+                console.error(err);
+                showAdminToast("שגיאה באישור תשלום: " + err.message, "error");
+            }
+        }
+
+        // Reject Bit Payment
+        async function rejectBitPayment(paymentId) {
+            if (!confirm(`האם לסמן את בקשת תשלום ביט #${paymentId} כנדחית?`)) {
+                return;
+            }
+
+            try {
+                const res = await fetch(`/api/admin/bit-payments/${paymentId}/reject`, {
+                    method: 'POST'
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || "דחיית התשלום נכשלה");
+
+                showAdminToast(data.message || "הבקשה סומנה כנדחית", "info");
+                await Promise.all([fetchBitPayments(), fetchOverview()]);
+            } catch (err) {
+                console.error(err);
+                showAdminToast("שגיאה בדחיית תשלום: " + err.message, "error");
+            }
+        }
+
+        // ==========================================
+        // Price Drop Alerts & Route Tracking (Admin)
+        // ==========================================
+        let rawTrackedAlertsData = [];
+
+        async function fetchPriceAlerts(showToast = false) {
+            try {
+                const [summaryRes, listRes] = await Promise.all([
+                    fetch('/api/flights/price-alerts/summary'),
+                    fetch('/api/flights/tracked')
+                ]);
+                const summary = await summaryRes.json();
+                rawTrackedAlertsData = await listRes.json();
+
+                // Update KPI Cards
+                const kpiTotal = document.getElementById('alertKpiTotalTracked');
+                const kpiDrops = document.getElementById('alertKpiTotalDrops');
+                const kpiSavings = document.getElementById('alertKpiTotalSavings');
+                const kpiMaxDrop = document.getElementById('alertKpiMaxDrop');
+
+                if (kpiTotal) kpiTotal.innerText = summary.total_tracked || rawTrackedAlertsData.length || 0;
+                if (kpiDrops) kpiDrops.innerText = summary.total_price_drops || 0;
+                if (kpiSavings) kpiSavings.innerText = `${summary.total_savings || 0}$`;
+                if (kpiMaxDrop) kpiMaxDrop.innerText = `${summary.max_drop_percent || 0}%`;
+
+                // Update Header Badge and Tab Badge
+                const countBadge = document.getElementById('adminAlertsCountBadge');
+                if (countBadge) countBadge.innerText = `${rawTrackedAlertsData.length} מסלולים`;
+
+                const tabBadge = document.getElementById('alertsDropsBadge');
+                if (tabBadge) {
+                    const drops = summary.total_price_drops || 0;
+                    tabBadge.innerText = drops;
+                    if (drops > 0) {
+                        tabBadge.classList.remove('hidden');
+                    } else {
+                        tabBadge.classList.add('hidden');
+                    }
+                }
+
+                filterPriceAlerts();
+
+                if (showToast) {
+                    showAdminToast("נתוני מעקב המחירים רועננו בהצלחה!", "success");
+                }
+            } catch (err) {
+                console.error("fetchPriceAlerts error:", err);
+                if (showToast) showAdminToast("שגיאה ברענון מסלולי מעקב", "error");
+            }
+        }
+
+        function filterPriceAlerts() {
+            const query = (document.getElementById('alertSearchInput')?.value || '').toLowerCase().trim();
+            const statusFilter = document.getElementById('alertStatusFilter')?.value || 'all';
+
+            const filtered = rawTrackedAlertsData.filter(item => {
+                const matchesQuery = !query ||
+                    (item.user_email && item.user_email.toLowerCase().includes(query)) ||
+                    (item.destination && item.destination.toLowerCase().includes(query)) ||
+                    (item.origin && item.origin.toLowerCase().includes(query)) ||
+                    (item.best_airline && item.best_airline.toLowerCase().includes(query));
+
+                const dropAmount = parseFloat(item.price_drop_amount) || 0;
+                const isDrop = dropAmount > 0 || item.alert_status === 'price_dropped';
+
+                let matchesStatus = true;
+                if (statusFilter === 'dropped') matchesStatus = isDrop;
+                else if (statusFilter === 'stable') matchesStatus = !isDrop;
+
+                return matchesQuery && matchesStatus;
+            });
+
+            renderPriceAlerts(filtered);
+        }
+
+        function renderPriceAlerts(alerts) {
+            const tableBody = document.getElementById('desktopAlertsTableBody');
+            const mobileContainer = document.getElementById('mobileAlertsCardsList');
+
+            if (!tableBody || !mobileContainer) return;
+
+            if (!alerts || alerts.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="9" class="p-8 text-center text-slate-400 font-semibold">לא נמצאו מסלולים במעקב התואמים לסינון הנוכחי.</td></tr>`;
+                mobileContainer.innerHTML = `<div class="p-8 text-center text-slate-400 font-semibold">לא נמצאו מסלולים במעקב.</div>`;
+                return;
+            }
+
+            // Desktop Table Rows
+            tableBody.innerHTML = alerts.map(item => {
+                const sym = item.currency === "ILS" ? "₪" : "$";
+                const initPrice = parseFloat(item.initial_price || item.lowest_price_seen) || 0;
+                const currPrice = parseFloat(item.current_price || item.lowest_price_seen) || initPrice;
+                const targetPrice = parseFloat(item.target_price) || 0;
+                const dropAmount = parseFloat(item.price_drop_amount) || 0;
+                const dropPercent = parseFloat(item.price_drop_percent) || 0;
+                const isDrop = dropAmount > 0 || item.alert_status === 'price_dropped';
+
+                return `
+                    <tr class="hover:bg-slate-900/60 transition-colors border-b border-slate-800/40">
+                        <td class="p-3 text-slate-400 font-mono">#${item.id}</td>
+                        <td class="p-3">
+                            <span class="font-bold text-slate-200 block">${item.user_email || 'אורח'}</span>
+                            <span class="text-[10px] text-slate-500 font-mono">${item.user_phone || 'אין טלפון'}</span>
+                        </td>
+                        <td class="p-3">
+                            <span class="font-black text-slate-100">${item.origin} ⇄ ${item.destination}</span>
+                            <span class="text-[11px] text-slate-400 block">${item.departure_date} ${item.return_date ? 'עד ' + item.return_date : ''}</span>
+                        </td>
+                        <td class="p-3">
+                            <span class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-semibold text-[11px]">${item.best_airline || 'כללי'}</span>
+                            <span class="text-[10px] text-slate-500 block mt-0.5">${item.direct_only ? 'ישירה בלבד' : 'עצירות מותרות'}</span>
+                        </td>
+                        <td class="p-3 font-semibold text-slate-400">${sym}${initPrice}</td>
+                        <td class="p-3 font-black ${isDrop ? 'text-emerald-400 text-sm' : 'text-slate-200'}">${sym}${currPrice}</td>
+                        <td class="p-3 text-slate-400">${targetPrice > 0 ? `${sym}${targetPrice}` : '—'}</td>
+                        <td class="p-3">
+                            ${isDrop ? `
+                                <span class="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[11px] font-bold inline-flex items-center gap-1">
+                                    <span>🔥</span>
+                                    <span>ירד ב-${sym}${dropAmount} (${dropPercent}%)</span>
+                                </span>
+                            ` : `
+                                <span class="px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 text-[10px]">מחיר יציב</span>
+                            `}
+                        </td>
+                        <td class="p-3 text-center">
+                            <div class="flex items-center justify-center gap-1.5">
+                                <button onclick="checkTrackedNowAdmin(${item.id})" id="btnAdminCheck-${item.id}"
+                                        class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-emerald-400 hover:text-emerald-300 transition"
+                                        title="סרוק מחיר עדכני עכשיו">
+                                    <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                                </button>
+                                ${item.booking_link ? `
+                                    <a href="${item.booking_link}" target="_blank"
+                                       class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-sky-400 hover:text-sky-300 transition" title="פתח לינק">
+                                        <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                                    </a>
+                                ` : ''}
+                                <button onclick="deleteTrackedAdmin(${item.id})"
+                                        class="p-1.5 rounded-lg bg-slate-800 hover:bg-red-900/40 text-slate-400 hover:text-red-400 transition"
+                                        title="הסר ממעקב">
+                                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            // Mobile Cards
+            mobileContainer.innerHTML = alerts.map(item => {
+                const sym = item.currency === "ILS" ? "₪" : "$";
+                const initPrice = parseFloat(item.initial_price || item.lowest_price_seen) || 0;
+                const currPrice = parseFloat(item.current_price || item.lowest_price_seen) || initPrice;
+                const dropAmount = parseFloat(item.price_drop_amount) || 0;
+                const dropPercent = parseFloat(item.price_drop_percent) || 0;
+                const isDrop = dropAmount > 0 || item.alert_status === 'price_dropped';
+
+                return `
+                    <div class="p-4 rounded-xl bg-slate-900/90 border ${isDrop ? 'border-emerald-500/40 bg-emerald-950/10' : 'border-slate-800'} space-y-3">
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <span class="text-sm font-black text-white">${item.origin} ⇄ ${item.destination}</span>
+                                <span class="text-xs text-slate-400 block">${item.departure_date} ${item.return_date ? 'עד ' + item.return_date : ''}</span>
+                                <span class="text-[11px] text-purple-300 block font-mono mt-0.5">${item.user_email || 'אורח'}</span>
+                            </div>
+                            ${isDrop ? `
+                                <span class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-black">
+                                    🔥 ירד ב-${sym}${dropAmount}
+                                </span>
+                            ` : `
+                                <span class="px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 text-[10px]">מחיר יציב</span>
+                            `}
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-2 p-2 rounded-lg bg-slate-950/60 text-xs">
+                            <div>
+                                <span class="text-slate-500 text-[10px] block">התחלתי</span>
+                                <span class="font-bold text-slate-300">${sym}${initPrice}</span>
+                            </div>
+                            <div>
+                                <span class="text-slate-500 text-[10px] block">עדכני</span>
+                                <span class="font-black ${isDrop ? 'text-emerald-400' : 'text-white'}">${sym}${currPrice}</span>
+                            </div>
+                            <div>
+                                <span class="text-slate-500 text-[10px] block">חברה</span>
+                                <span class="font-bold text-slate-300 truncate block">${item.best_airline || 'כללי'}</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-2 pt-1">
+                            <button onclick="checkTrackedNowAdmin(${item.id})" id="btnAdminCheckMob-${item.id}"
+                                    class="flex-1 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition">
+                                <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                                <span>בדוק עכשיו</span>
+                            </button>
+                            ${item.booking_link ? `
+                                <a href="${item.booking_link}" target="_blank" class="px-3 py-2 rounded-lg bg-slate-800 text-sky-400 font-bold text-xs">
+                                    פתח
+                                </a>
+                            ` : ''}
+                            <button onclick="deleteTrackedAdmin(${item.id})" class="px-3 py-2 rounded-lg bg-slate-800 text-red-400 text-xs">
+                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            refreshIcons();
+        }
+
+        async function checkTrackedNowAdmin(trackId) {
+            const btn = document.getElementById(`btnAdminCheck-${trackId}`) || document.getElementById(`btnAdminCheckMob-${trackId}`);
+            if (btn) btn.classList.add('animate-spin');
+
+            try {
+                const res = await fetch(`/api/flights/track/${trackId}/check-now`, { method: 'POST' });
+                const data = await res.json();
+                if (data.is_alert || data.price_drop_amount > 0) {
+                    showAdminToast(`🔥 ירידת מחיר זוהתה במסלול #${trackId}: חיסכון של ${data.price_drop_amount}!`, "success");
+                } else {
+                    showAdminToast(`מסלול #${trackId} נבדק: מחיר ${data.new_price || data.current_price}`, "info");
+                }
+                await fetchPriceAlerts();
+            } catch (err) {
+                console.error(err);
+                showAdminToast("שגיאה בבדיקת מחיר: " + err.message, "error");
+            } finally {
+                if (btn) btn.classList.remove('animate-spin');
+            }
+        }
+
+        async function triggerGlobalScanAdmin() {
+            const btn = document.getElementById('btnAdminGlobalScan');
+            const origHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i><span>מריץ סריקה ברקע...</span>`;
+            refreshIcons();
+
+            try {
+                const res = await fetch('/api/flights/track/scan-all', { method: 'POST' });
+                const data = await res.json();
+                showAdminToast(data.message || "סריקת כל מסלולי המעקב הופעלה ברקע בהצלחה!", "success");
+                setTimeout(async () => {
+                    await fetchPriceAlerts();
+                    btn.disabled = false;
+                    btn.innerHTML = origHtml;
+                    refreshIcons();
+                }, 3000);
+            } catch (err) {
+                console.error(err);
+                showAdminToast("שגיאה בהפעלת סריקה גלובלית", "error");
+                btn.disabled = false;
+                btn.innerHTML = origHtml;
+                refreshIcons();
+            }
+        }
+
+        async function deleteTrackedAdmin(trackId) {
+            if (!confirm(`האם להסיר את מסלול #${trackId} ממעקב המערכת?`)) return;
+            try {
+                const res = await fetch(`/api/flights/track/${trackId}`, { method: 'DELETE' });
+                const data = await res.json();
+                showAdminToast(data.message || "המסלול הוסר ממעקב", "info");
+                await fetchPriceAlerts();
+            } catch (err) {
+                console.error(err);
+                showAdminToast("שגיאה בהסרת מסלול: " + err.message, "error");
+            }
+        }
+
+        // Master Load Data
+        async function loadAdminData(showToast = false) {
+            const icon = document.getElementById('refreshIcon');
+            if (icon) icon.classList.add('animate-spin');
+
+            const isAuthed = await checkAdminAuth();
+            if (!isAuthed) {
+                if (icon) icon.classList.remove('animate-spin');
+                return;
+            }
+
+            await Promise.all([fetchOverview(), fetchUsers(), fetchBitPayments(), fetchPriceAlerts(), fetchGlobalSearches()]);
+
+            if (icon) icon.classList.remove('animate-spin');
+            if (showToast) {
+                showAdminToast("נתוני הדאשבורד סונכרנו בהצלחה!", "success");
+            }
+        }
+
+        // On Page Load
+        document.addEventListener('DOMContentLoaded', () => {
+            refreshIcons();
+            loadAdminData(false);
+        });
+    </script>
+</body>
+</html>

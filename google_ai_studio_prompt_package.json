@@ -1,0 +1,105 @@
+{
+  "project_name": "Smart Flight Hunter AI - Gemini Agent",
+  "description": "Full Google AI Studio configuration package including System Instructions, Structured Output JSON Schema, Few-Shot Examples, and Function Calling definitions.",
+  "recommended_model": "gemini-2.5-flash",
+  "temperature": 0.2,
+  "top_p": 0.95,
+  "system_instruction": "You are Smart Flight Hunter AI (צייד הטיסות AI), an elite autonomous flight intelligence agent specializing in budget and direct flights departing from Tel Aviv (TLV) and worldwide.\n\nYour primary role is to parse complex natural language flight queries in Hebrew, English, or mixed slang into precision flight parameters with strict temporal and duration constraints, and to evaluate real airline flight findings.\n\nCRITICAL DATE & DURATION REASONING RULES:\n1. In-Stay Date vs Flight Date (Negative Constraints):\n   If the user specifies an in-stay date (e.g., 'שיהיה בתאריך 26.11', 'להיות שם ב-26.11', 'אירוע ב-26.11') AND specifies that this date CANNOT be a flight date ('אבל לא בחזור וגם לא הלוך', 'לא לטוס ביום זה'):\n   - 'departure_date' MUST be strictly BEFORE the specified date (dep < target_date).\n   - 'return_date' MUST be strictly AFTER the specified date (ret > target_date).\n   - NEITHER 'departure_date' NOR 'return_date' may equal the specified date!\n2. Trip Duration (Nights / Days):\n   If the user specifies a nights range (e.g., '3-4 לילות', 'בין 3 ל-4 לילות') or maximum days ('עד 5 ימים'):\n   - (return_date - departure_date) in days must equal 3 or 4 nights exactly.\n3. Month Constraints:\n   If the user specifies a month (e.g., 'בנובמבר', 'בחודש 11'), select dates strictly within that month in current/next year.\n4. Passengers & Baggage:\n   - '2 אנשים', 'זוג' -> passengers: 2\n   - 'עם מזוודות', 'כבודה' -> baggage: 'checked'\n5. Output must be strictly valid JSON according to the schema.",
+  "response_schema": {
+    "type": "object",
+    "properties": {
+      "origin": { "type": "string", "description": "3-letter IATA code, default TLV" },
+      "destination_iata": { "type": "string", "description": "3-letter IATA destination airport code (e.g. PRG, FCO, ATH, VIE)" },
+      "destination_name": { "type": "string", "description": "Hebrew name of destination city" },
+      "departure_date": { "type": "string", "format": "date", "description": "YYYY-MM-DD" },
+      "return_date": { "type": "string", "format": "date", "description": "YYYY-MM-DD" },
+      "trip_type": { "type": "string", "enum": ["round-trip", "one-way"] },
+      "direct_only": { "type": "boolean", "description": "True if user asked for direct flights only (ישיר)" },
+      "currency": { "type": "string", "enum": ["ILS", "USD"] },
+      "passengers": { "type": "integer", "description": "Number of passengers" },
+      "min_nights": { "type": "integer", "description": "Minimum nights duration requested" },
+      "max_nights": { "type": "integer", "description": "Maximum nights duration requested" },
+      "baggage": { "type": "string", "enum": ["cabin", "checked"] },
+      "flexible": { "type": "boolean" },
+      "user_intent_summary": { "type": "string", "description": "Hebrew summary of parsed intent" }
+    },
+    "required": ["origin", "destination_iata", "destination_name", "departure_date", "return_date", "trip_type", "direct_only", "currency", "passengers", "user_intent_summary"]
+  },
+  "few_shot_examples": [
+    {
+      "input": "טיסה ל2 אנשים לפראג 3-4 לילות טיסה ישירה חובה שהתאריך 26.11 יהיה חלק מהימים אבל לא ביום של ההלוך ולא ביום של החזור עם מזוודות",
+      "output": {
+        "origin": "TLV",
+        "destination_iata": "PRG",
+        "destination_name": "פראג",
+        "departure_date": "2026-11-23",
+        "return_date": "2026-11-27",
+        "trip_type": "round-trip",
+        "direct_only": true,
+        "currency": "ILS",
+        "passengers": 2,
+        "min_nights": 3,
+        "max_nights": 4,
+        "baggage": "checked",
+        "flexible": true,
+        "user_intent_summary": "טיסה ישירה לפראג עבור 2 נוסעים עם מזוודות, 4 לילות (יציאה 23.11, חזרה 27.11, שהות ב-26.11 ללא טיסות ביום זה)"
+      }
+    },
+    {
+      "input": "טיסה לרומא לזוג עם מזוודות חייב ש26.11 יהיה חלק מהתאריכים אבל לא בהלוך ולא בחזור בין 3-4 לילות",
+      "output": {
+        "origin": "TLV",
+        "destination_iata": "FCO",
+        "destination_name": "רומא",
+        "departure_date": "2026-11-23",
+        "return_date": "2026-11-27",
+        "trip_type": "round-trip",
+        "direct_only": false,
+        "currency": "ILS",
+        "passengers": 2,
+        "min_nights": 3,
+        "max_nights": 4,
+        "baggage": "checked",
+        "flexible": true,
+        "user_intent_summary": "טיסה לרומא לזוג עם מזוודות (בין 3-4 לילות, שהות ב-26.11 ללא טיסות ביום זה)"
+      }
+    },
+    {
+      "input": "טיסה לוינה 2 אנשים עם מזוודות בתאריך נובמבר עד 5 ימים שיהיה בתאריך 26.11 אבל לא בחזור וגם לא הלוך",
+      "output": {
+        "origin": "TLV",
+        "destination_iata": "VIE",
+        "destination_name": "וינה",
+        "departure_date": "2026-11-23",
+        "return_date": "2026-11-28",
+        "trip_type": "round-trip",
+        "direct_only": false,
+        "currency": "ILS",
+        "passengers": 2,
+        "min_nights": 2,
+        "max_nights": 5,
+        "baggage": "checked",
+        "flexible": false,
+        "user_intent_summary": "טיסה לוינה עבור 2 נוסעים עם מזוודות (יציאה 23.11, חזרה 28.11, שהות ב-26.11 ללא טיסות ביום זה, עד 5 ימים בנובמבר)"
+      }
+    }
+  ],
+  "tools": [
+    {
+      "name": "search_flights",
+      "description": "Searches real-time flight fares across El Al, Arkia, Israir, Wizz Air, Ryanair, Smartwings, Blue Bird, and Skyscanner.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "origin": { "type": "string" },
+          "destination": { "type": "string" },
+          "departure_date": { "type": "string" },
+          "return_date": { "type": "string" },
+          "direct_only": { "type": "boolean" },
+          "passengers": { "type": "integer" }
+        },
+        "required": ["origin", "destination", "departure_date"]
+      }
+    }
+  ]
+}

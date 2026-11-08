@@ -1,0 +1,67 @@
+# Environment Variables & Secrets
+.env
+.env.local
+.env.*.local
+*.env
+
+# SQLite Databases & Local Storage
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+data/
+core.db
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Binaries & Executables
+*.exe
+bin/*.exe
+bin/
+
+# Testing & Artifacts
+.pytest_cache/
+.coverage
+htmlcov/
+scratch/
+*.html.tmp
+*.log
+secretflights_*.html
+skyscanner_*.html
+sf_parsed_deals.json
+*.png
+
+# Playwright & Browser Sessions
+.cache/
+test-results/
+
+# OS / Editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

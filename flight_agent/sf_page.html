@@ -1,0 +1,271 @@
+<!DOCTYPE html><html lang="he" dir="rtl"><head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>מיד עוברים לטיסה | טיסות סודיות</title>
+    <link href="/static/css/fonts.css" rel="stylesheet" type="text/css">
+    <link href="/static/css/style_updated.css" rel="stylesheet" type="text/css">
+    <link rel="shortcut icon" href="/static/img/cropped-logo-32x32.png">
+</head>
+<body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js" type="text/javascript"></script>
+<script src="/static/js/custom-js.js" type="text/javascript"></script>
+<script>
+    function setCookie(name, value, days_to_expire) {
+        var d = new Date();
+        d.setTime(d.getTime() + (days_to_expire*24*60*60*1000));
+        var expires = "expires="+ d.toUTCString();
+        document.cookie = name + "=" + value + ";" + expires + ";path=/";
+    }
+
+    function setParam(name, value, daysToExpire) {
+        const now = new Date();
+        const msToExpire = daysToExpire * 24 * 60 * 60 * 1000;
+        const expiryDate = new Date(now.getTime() + msToExpire);
+        const expiryTimestamp = expiryDate.getTime(); // ms since epoch
+
+        document.cookie = `${name}=${value}; expires=${expiryDate.toUTCString()}; path=/; `;
+
+        localStorage.setItem(name, JSON.stringify({
+            value: value,
+            expires: expiryTimestamp
+        }));
+    }
+
+    function getCookie(name, default_value) {
+        name = name + "=";
+        var decodedCookie = decodeURIComponent(document.cookie);
+        var ca = decodedCookie.split(';');
+        for(var i = 0; i <ca.length; i++) {
+            var c = ca[i];
+            while (c.charAt(0) == ' ') {
+                c = c.substring(1);
+            }
+            if (c.indexOf(name) == 0) {
+                return c.substring(name.length, c.length);
+            }
+        }
+        return default_value;
+    }
+
+    function validateNumber(e) {
+        var pattern = /^[]$/;
+
+        return pattern.test(e.key )
+    }
+
+    function simulateInteraction() {
+        const interactionElement = document.createElement('div');
+        interactionElement.style.display = 'none';
+        document.body.appendChild(interactionElement);
+        interactionElement.click(); // Simulate a click
+        interactionElement.remove();
+    }
+
+    function redirect(adults, children, infants) {
+        var btn = document.getElementById("submit_button");
+        if (btn.classList.contains('disabled')) {return;}
+
+        var defaultDaysToExpire = 1;
+        var redirectPageUrl = '/redirect-page' + window.location.search;
+
+        var body = jQuery("body");
+
+        setCookie("adults", adults, defaultDaysToExpire);
+        setCookie("children", children, defaultDaysToExpire);
+        setCookie("infants", infants, defaultDaysToExpire);
+
+        redirectPageUrl = updateURLParameter(redirectPageUrl, 'adults', adults);
+        redirectPageUrl = updateURLParameter(redirectPageUrl, 'children', children);
+        redirectPageUrl = updateURLParameter(redirectPageUrl, 'infants', infants);
+
+        btn.classList.add('disabled');
+        window.location.assign(redirectPageUrl);
+    }
+
+    function onRedirectButtonClick() {
+        var adults = parseInt(document.getElementById("adults").value);
+        var children = parseInt(document.getElementById("children").value);
+        var infants = parseInt(document.getElementById("infants").value);
+        redirect(adults, children, infants);
+    }
+
+    function updateURLParameter(url, param, paramVal){
+        /**
+         * http://stackoverflow.com/a/10997390/11236
+         */
+        var newAdditionalURL = "";
+        var tempArray = url.split("?");
+        var baseURL = tempArray[0];
+        var additionalURL = tempArray[1];
+        var temp = "";
+        if (additionalURL) {
+            tempArray = additionalURL.split("&");
+            for (var i=0; i<tempArray.length; i++){
+                if(tempArray[i].split('=')[0] != param){
+                    newAdditionalURL += temp + tempArray[i];
+                    temp = "&";
+                }
+            }
+        }
+
+        var rows_txt = temp + "" + param + "=" + paramVal;
+        return baseURL + "?" + newAdditionalURL + rows_txt;
+    }
+
+    function getURLParameter(url, param) {
+        var tempArray = url.split("?");
+        var baseURL = tempArray[0];
+        var additionalURL = tempArray[1];
+        var paramValue = undefined;
+        var keyValue = undefined
+        if (additionalURL) {
+            tempArray = additionalURL.split("&");
+            for (var i=0; i<tempArray.length; i++){
+                keyValue = tempArray[i].split("=");
+                if(keyValue[0] === param) {
+                    paramValue = keyValue[1];
+                    break;
+                }
+            }
+        }
+
+        return paramValue;
+    }
+
+    function onWindowLoaded(){
+        // for some reason on mobiles browsers svg logo is not shown on page load first time
+        // but if we hide and show logo element it should be visible again :(
+        var logo = document.getElementsByClassName("logo")[0];
+        logo.classList.add("disable-logo");
+        setTimeout(function() {
+            logo.classList.remove("disable-logo");
+        }, 1);
+
+        const associateId = getURLParameter("/redirect" + window.location.href, "associateid");
+        if (associateId === "37") {
+            setParam("_t", "37", 14);
+        }
+
+        var partner = getURLParameter("/redirect" + window.location.search, "partner");
+        var body = jQuery("body");
+        body.data("partner",  partner);
+        body.data("children_infants_warning", "עד 8 קטינים להזמנה")
+        var warnings = body.find('.warning');
+        for (var i=0; i < warnings.length; i++) {
+            var warn = warnings[i]
+            if (warn.innerText.length === 0) {
+                continue;
+            }
+
+            var warnText = warn.innerText;
+            var jqWarn = jQuery(warn);
+            jqWarn.data("warning", warnText);
+        }
+
+        setTimeout(function() {
+            var adults = parseInt(document.getElementById("adults").value);
+            var children = parseInt(document.getElementById("children").value);
+            var infants = parseInt(document.getElementById("infants").value);
+            simulateInteraction();
+            redirect(adults, children, infants);
+        }, 30000); // 30 seconds
+    }
+
+    window.addEventListener("load", function () {
+        onWindowLoaded();
+    });
+
+    // now we disable button after click and until redirect-page is loaded
+    // but button is still will be disabled if after loading redirect-page we push history back
+    // this is an attempt to enable it again
+    window.addEventListener("pageshow", function () {
+        var btn = document.getElementById("submit_button");
+        btn.classList.remove('disabled');
+    });
+
+    function suppressDefault(e) {
+        e.preventDefault();
+    }
+</script>
+<div class="content_area">
+    <div class="container">
+        <div class="logo">
+            <img src="/static/img/Logo-new.png" alt="Logo">
+        </div>
+        <div class="location_date">
+            <h1>
+                תל אביב
+                
+                <img src="/static/img/fligt_icon_rtl.svg" alt="">
+                
+                סלוניקי
+            </h1>
+            
+            <p>20.10.27 — 27.10.27</p>
+            
+        </div>
+
+        <!-- passengers form area -->
+        <div class="passengers_form">
+            <h2>נא לבחור את מספר הנוסעים</h2>
+            <div class="form_area">
+                <div class="form_group" onclick="suppressDefault(event)">
+                    <label>
+                        <span class="warning"><br></span>
+                        מבוגרים
+                        <span class="warning">עד 8 מבוגרים להזמנה</span>
+                    </label>
+                    <div class="number">
+                        <span class="plus prevent-select"><img src="/static/img/plus.svg" alt="Plus"></span>
+                        <input type="text" value="1" readonly="" id="adults" onkeypress="return validateNumber(event)" class="prevent-select">
+                        <script>
+                            var adults = getCookie("adults", 1)
+                            document.getElementById("adults").value = adults;
+                        </script>
+                        <span class="minus prevent-select"><img src="/static/img/minus.svg" alt="Minus"></span>
+                    </div>
+                </div>
+                <div class="form_group" onclick="suppressDefault(event)">
+                    <label>
+                        <span class="warning"><br></span>
+                        ילדים (11-2)
+                        <span class="warning">עד 8 ילדים להזמנה</span>
+                    </label>
+                    <div class="number">
+                        <span class="plus prevent-select"><img src="/static/img/plus.svg" alt="Plus"></span>
+                        <input type="text" value="0" readonly="" id="children" onkeypress="return validateNumber(event)" class="prevent-select">
+                        <script>
+                            var children = getCookie("children", 0)
+                            document.getElementById("children").value = children;
+                        </script>
+                        <span class="minus prevent-select"><img src="/static/img/minus.svg" alt="Minus"></span>
+                    </div>
+                </div>
+                <div class="form_group" onclick="suppressDefault(event)">
+                    <label>
+                        <span class="warning"><br></span>
+                        תינוקות (מתחת ל-2)
+                        <span class="warning">נדרש מבוגר אחד על כל תינוק</span>
+                    </label>
+                    <div class="number">
+                        <span class="plus prevent-select"><img src="/static/img/plus.svg" alt="Plus"></span>
+                        <input type="text" value="0" readonly="" id="infants" onkeypress="return validateNumber(event)" class="prevent-select">
+                        <script>
+                            var infants = getCookie("infants", 0)
+                            document.getElementById("infants").value = infants;
+                        </script>
+                        <span class="minus prevent-select"><img src="/static/img/minus.svg" alt="Minus"></span>
+                    </div>
+                </div>
+            </div>
+            <input type="hidden" id="redirect_url" value="">
+            <input type="submit" id="submit_button" name="קדימה!" value="קדימה!" onclick="onRedirectButtonClick()">
+        </div>
+        <!-- passengers form area -->
+
+        <div class="content_info">מחיר הטיסה עלול להשתנות על פי הרכב הנוסעים וזמינות מחלקות המחיר</div>
+    </div>
+</div>
+
+</body></html>

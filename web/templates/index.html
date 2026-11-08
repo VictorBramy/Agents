@@ -1,0 +1,1358 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Job Hunter AI | סוכן מציאת עבודה אישי</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="/static/style.css">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen font-sans antialiased flex flex-col">
+
+  <!-- Top Navigation Bar -->
+  <header class="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-slate-200 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-brand-500/20">
+          <i data-lucide="crosshair" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h1 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+            Smart Job Hunter AI
+            <span class="text-xs bg-indigo-100 text-brand-700 px-2 py-0.5 rounded-full font-semibold">דו-לשוני עברית/אנגלית</span>
+          </h1>
+          <p class="text-xs text-slate-500">איתור והתאמת משרות הייטק מבוסס קורות חיים והגשה בשפת הפרסום</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <a id="btnFlightAgentNav" href="/flights" class="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-sky-900 bg-sky-50 hover:bg-sky-100 rounded-xl border border-sky-200 shadow-2xs hover:shadow-xs transition active:scale-95" title="סוכן טיסות זולות מבוסס Google AI ו-Google Flights">
+          <i data-lucide="plane-takeoff" class="w-4 h-4 text-sky-600"></i>
+          <span>סוכן טיסות (AI Flights)</span>
+          <span class="text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-sky-600 text-white">חדש ✈️</span>
+        </a>
+
+        <button id="btnSurveyAgentNav" onclick="openSurveyAgentModal()" class="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-amber-900 bg-amber-50 hover:bg-amber-100 rounded-xl border border-amber-200/90 shadow-2xs hover:shadow-xs transition active:scale-95" title="סוכן מילוי סקרים אוטומטי מ-panelview@polyeda.com באמצעות Playwright">
+          <i data-lucide="clipboard-check" class="w-4 h-4 text-amber-600"></i>
+          <span>סוכן סקרים (Polyeda)</span>
+          <span id="surveyNavPointsBadge" class="text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-amber-600 text-white">0 נק'</span>
+        </button>
+
+        <button id="btnMetaAgentNav" onclick="openMetaAgentModal()" class="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 rounded-lg border border-emerald-200 transition">
+          <i data-lucide="cpu" class="w-4 h-4 text-emerald-600"></i>
+          <span>סוכן שיפור מתמיד (Meta AI)</span>
+          <span id="navHealthBadge" class="text-xs px-2 py-0.5 rounded-full bg-emerald-600 text-white font-bold">--</span>
+        </button>
+
+        <button id="btnWhatsappDigest" onclick="openWhatsAppModal()" class="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-emerald-800 bg-emerald-50/90 hover:bg-emerald-100 rounded-xl border border-emerald-200 shadow-2xs hover:shadow-xs transition active:scale-95" title="סיכום משרות מותאם לשיתוף בוואטסאפ">
+          <i data-lucide="message-circle" class="w-4 h-4 text-emerald-600"></i>
+          <span>סיכום לוואטסאפ</span>
+          <span class="text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-emerald-600 text-white">חדש ✦</span>
+        </button>
+
+        <button id="btnSkillGaps" onclick="openSkillGapsModal()" class="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-purple-800 bg-purple-50/90 hover:bg-purple-100 rounded-xl border border-purple-200 shadow-2xs hover:shadow-xs transition active:scale-95" title="פערי כישורים מול דרישות השוק וקורסים מומלצים">
+          <i data-lucide="trending-up" class="w-4 h-4 text-purple-600"></i>
+          <span>מפת כישורים</span>
+          <span class="text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-purple-600 text-white">AI</span>
+        </button>
+
+        <button id="btnInspectUrl" onclick="openInspectUrlModal()" class="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-lg border border-indigo-200 transition">
+          <i data-lucide="sparkles" class="w-4 h-4 text-brand-600"></i>
+          <span>הגש קישור ישיר עם AI</span>
+        </button>
+
+        <button id="btnManualAdd" onclick="openManualModal()" class="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition">
+          <i data-lucide="plus-circle" class="w-4 h-4"></i>
+          <span>הוסף משרה ידנית</span>
+        </button>
+
+        <button id="btnSettings" onclick="openSettingsModal()" class="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition">
+          <i data-lucide="settings" class="w-4 h-4"></i>
+          <span>הגדרות</span>
+        </button>
+
+        <button id="btnScanJobs" onclick="triggerJobScan()" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-lg shadow-sm transition active:scale-95">
+          <i data-lucide="radar" class="w-4 h-4 scan-icon"></i>
+          <span id="scanBtnText">סרוק משרות עכשיו</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+    <!-- Meta-Agent Autonomous Improvement Bar -->
+    <section class="bg-gradient-to-r from-emerald-950 via-slate-900 to-indigo-950 text-white rounded-2xl p-5 shadow-lg border border-emerald-500/20 relative overflow-hidden">
+      <div class="flex flex-col lg:flex-row items-center justify-between gap-5 relative z-10">
+        <div class="flex items-center gap-4">
+          <div class="relative flex items-center justify-center">
+            <div class="w-14 h-14 rounded-2xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center text-emerald-400">
+              <i data-lucide="bot" class="w-7 h-7"></i>
+            </div>
+            <span id="metaHealthScorePill" class="absolute -bottom-1 -right-1 px-2 py-0.5 text-xs font-bold rounded-full bg-emerald-500 text-slate-950 shadow-md">--/100</span>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h3 class="text-base font-bold text-white flex items-center gap-1.5">
+                <span>סוכן שיפור מתמיד (Meta AI Agent)</span>
+              </h3>
+              <span id="metaHealthStatusText" class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">ממתין לסריקה</span>
+              <span class="inline-flex items-center gap-1.5 text-[11px] font-medium text-emerald-300 bg-emerald-950/80 px-2.5 py-0.5 rounded-full border border-emerald-500/30 shadow-inner">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                <span>חושב ומשפר אוטומטית ברקע</span>
+              </span>
+            </div>
+            <p id="metaLiveThoughtBanner" class="text-xs text-slate-300 mt-1 max-w-2xl leading-relaxed">
+              סוכן אוטונומי שמנטר את ביצועי הסוכן, מאתר כשלים בטוקנים של סורקים, מגלה באגים בהתאמת שפות ומילים, ומשפר את האלגוריתם אוטומטית.
+            </p>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3 w-full lg:w-auto justify-end">
+          <button onclick="openMetaAgentModal()" class="px-4 py-2.5 text-xs font-semibold text-white bg-slate-800/80 hover:bg-slate-700/80 border border-slate-600/50 rounded-xl transition flex items-center gap-2 shadow-sm">
+            <i data-lucide="sliders" class="w-4 h-4 text-emerald-400"></i>
+            <span>דוח דיאגנוסטיקה מפורט</span>
+          </button>
+          <button id="btnQuickOptimize" onclick="runAutoOptimization()" class="px-5 py-2.5 text-xs font-bold text-slate-950 bg-gradient-to-r from-emerald-400 to-teal-300 hover:from-emerald-300 hover:to-teal-200 rounded-xl shadow-md transition flex items-center gap-2 active:scale-95">
+            <i data-lucide="sparkles" class="w-4 h-4"></i>
+            <span id="btnQuickOptimizeText">שדרג ושפר את הסוכן עכשיו 🚀</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Bilingual Explanation Banner -->
+    <div class="bg-gradient-to-r from-indigo-500/10 via-brand-500/10 to-purple-500/10 border border-brand-200 rounded-2xl p-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-brand-600 text-white flex items-center justify-center shrink-0">
+          <i data-lucide="languages" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h3 class="text-sm font-bold text-slate-800">התאמה דו-לשונית אוטומטית (עברית & אנגלית)</h3>
+          <p class="text-xs text-slate-600">העלה קורות חיים בשתי השפות: הסוכן יזהה אוטומטית את שפת המשרה (עברית או אנגלית) ויגיש מכתב פנייה וקו"ח בשפה התואמת!</p>
+        </div>
+      </div>
+      <div class="hidden sm:flex items-center gap-2 text-xs font-semibold">
+        <span class="px-2.5 py-1 bg-white rounded-lg border border-slate-200 shadow-sm flex items-center gap-1">🇮🇱 משרות עברית ➜ פנייה בעברית</span>
+        <span class="px-2.5 py-1 bg-white rounded-lg border border-slate-200 shadow-sm flex items-center gap-1">🇺🇸 English Jobs ➜ English Submission</span>
+      </div>
+    </div>
+
+    <!-- Candidate Profile & Bilingual CVs Section -->
+    <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden transition-all">
+      <div class="p-6 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-l from-slate-50/50 to-white">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-brand-600">
+            <i data-lucide="file-badge" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <h2 class="text-lg font-bold text-slate-800" id="profileName">פרופיל מועמד / קורות חיים</h2>
+            <p class="text-sm text-slate-500" id="profileSubtext">נהל את קורות החיים שלך בעברית ובאנגלית להתאמה מדויקת לכל משרה</p>
+          </div>
+        </div>
+
+        <!-- Bilingual Upload Slots -->
+        <div class="flex flex-wrap items-center gap-3">
+          <!-- Hebrew CV Slot -->
+          <div class="flex items-center gap-2 bg-slate-50 p-2 rounded-xl border border-slate-200">
+            <div class="text-xs font-bold text-slate-700 flex items-center gap-1">
+              <span>🇮🇱 קו"ח עברית:</span>
+              <span id="hebrewCvBadge" class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600">לא הועלה</span>
+            </div>
+            <button onclick="triggerCvUpload('he')" class="px-2.5 py-1 text-xs font-semibold text-brand-700 bg-white border border-brand-200 rounded-lg hover:bg-brand-50 transition inline-flex items-center gap-1">
+              <i data-lucide="upload" class="w-3.5 h-3.5"></i>
+              <span>העלה</span>
+            </button>
+            <button onclick="openPasteCvModal('he')" class="px-2 py-1 text-xs font-medium text-slate-600 hover:bg-slate-200 rounded-lg transition" title="הדבק טקסט">
+              <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+
+          <!-- English CV Slot -->
+          <div class="flex items-center gap-2 bg-slate-50 p-2 rounded-xl border border-slate-200">
+            <div class="text-xs font-bold text-slate-700 flex items-center gap-1">
+              <span>🇺🇸 English CV:</span>
+              <span id="englishCvBadge" class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600">Not uploaded</span>
+            </div>
+            <button onclick="triggerCvUpload('en')" class="px-2.5 py-1 text-xs font-semibold text-brand-700 bg-white border border-brand-200 rounded-lg hover:bg-brand-50 transition inline-flex items-center gap-1">
+              <i data-lucide="upload" class="w-3.5 h-3.5"></i>
+              <span>Upload</span>
+            </button>
+            <button onclick="openPasteCvModal('en')" class="px-2 py-1 text-xs font-medium text-slate-600 hover:bg-slate-200 rounded-lg transition" title="Paste text">
+              <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+
+          <input type="file" id="cvFileInput" accept=".pdf,.txt" class="hidden" onchange="handleFileUpload(event)">
+        </div>
+      </div>
+
+      <!-- Profile Details Display -->
+      <div id="profileDetails" class="p-6 grid grid-cols-1 md:grid-cols-4 gap-6 bg-white">
+        <div class="md:col-span-1 space-y-3 border-l border-slate-100 pl-4">
+          <div>
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">רמת ניסיון</span>
+            <div class="text-base font-bold text-slate-800 mt-0.5" id="profileSeniority">טרם הוגדר</div>
+          </div>
+          <div>
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">שנות ניסיון משוערות</span>
+            <div class="text-base font-bold text-slate-800 mt-0.5" id="profileExp">--</div>
+          </div>
+          <div>
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">פרטי התקשרות</span>
+            <div class="text-xs text-slate-600 mt-0.5 space-y-1">
+              <div id="profileEmail" class="flex items-center gap-1.5"><i data-lucide="mail" class="w-3.5 h-3.5"></i> <span>--</span></div>
+              <div id="profilePhone" class="flex items-center gap-1.5"><i data-lucide="phone" class="w-3.5 h-3.5"></i> <span>--</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="md:col-span-3 space-y-4">
+          <div>
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">תפקידי יעד מזוהים (Target Roles)</span>
+            <div class="flex flex-wrap gap-2 mt-1.5" id="targetRolesContainer">
+              <span class="text-xs text-slate-400 italic">העלה קורות חיים לזיהוי תפקידים...</span>
+            </div>
+          </div>
+
+          <div>
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">כישורים טכנולוגיים שזוהו (Skills)</span>
+            <div class="flex flex-wrap gap-1.5 mt-1.5 max-h-24 overflow-y-auto pr-1" id="skillsContainer">
+              <span class="text-xs text-slate-400 italic">העלה קורות חיים לחילוץ כישורים...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Jobs Section -->
+    <section class="space-y-4">
+      <!-- Search, Language & Status Filter Bar -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200/80 shadow-sm">
+        <div class="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0" id="statusFilterTabs">
+          <button onclick="setFilter('all')" class="status-tab active px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-brand-600 text-white transition">הכל (<span id="countAll">0</span>)</button>
+          <button onclick="setFilter('new')" class="status-tab px-3.5 py-1.5 text-xs font-semibold rounded-lg text-slate-600 hover:bg-slate-100 transition">חדשות (<span id="countNew">0</span>)</button>
+          <button onclick="setFilter('bookmarked')" class="status-tab px-3.5 py-1.5 text-xs font-semibold rounded-lg text-slate-600 hover:bg-slate-100 transition">שמורות (<span id="countBookmarked">0</span>)</button>
+          <button onclick="setFilter('applied')" class="status-tab px-3.5 py-1.5 text-xs font-semibold rounded-lg text-slate-600 hover:bg-slate-100 transition">הוגשה מועמדות (<span id="countApplied">0</span>)</button>
+          <button onclick="setFilter('interviewing')" class="status-tab px-3.5 py-1.5 text-xs font-semibold rounded-lg text-slate-600 hover:bg-slate-100 transition">ראיון (<span id="countInterviewing">0</span>)</button>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <!-- Platform / Source Filter -->
+          <select id="sourceFilterSelect" onchange="setSourceFilter(this.value)" class="text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 focus:outline-none">
+            <option value="all">כל האתרים 🌐</option>
+            <option value="LinkedIn">LinkedIn</option>
+            <option value="Drushim">דרושים (Drushim) 🇮🇱</option>
+            <option value="JobMaster">ג'ובמאסטר (JobMaster) 🇮🇱</option>
+            <option value="AllJobs">AllJobs 🇮🇱</option>
+            <option value="Greenhouse">Greenhouse</option>
+            <option value="Comeet">Comeet</option>
+          </select>
+
+          <!-- Language Filter -->
+          <select id="langFilterSelect" onchange="setLangFilter(this.value)" class="text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 focus:outline-none">
+            <option value="all">כל השפות 🌐</option>
+            <option value="he">משרות בעברית 🇮🇱</option>
+            <option value="en">English Jobs 🇺🇸</option>
+          </select>
+
+          <!-- Search Input -->
+          <div class="relative w-full md:w-56">
+            <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+            <input type="text" id="searchInput" placeholder="חיפוש חברה, תפקיד..." oninput="handleSearch(this.value)" class="w-full pl-3 pr-9 py-1.5 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition">
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Scan Banner (hidden by default) -->
+      <div id="scanStatusBanner" class="hidden bg-indigo-50 border border-indigo-100 rounded-xl p-4 flex items-center justify-between animate-pulse">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center animate-spin">
+            <i data-lucide="loader-2" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <h4 class="text-sm font-bold text-indigo-900">הסוכן סורק כעת במקביל: LinkedIn, AllJobs, Drushim, JobMaster, Greenhouse ו-Comeet...</h4>
+            <p class="text-xs text-indigo-700">בדיקת כפילויות גלובלית, זיהוי שפה (עברית/אנגלית) והתאמת קורות חיים של ליאור אזולאי בעזרת Google AI Pro</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Jobs Grid -->
+      <div id="jobsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <!-- Rendered dynamically via app.js -->
+      </div>
+
+      <!-- Empty State -->
+      <div id="emptyState" class="hidden text-center py-16 bg-white rounded-2xl border border-dashed border-slate-300">
+        <div class="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto text-slate-400 mb-4">
+          <i data-lucide="briefcase" class="w-7 h-7"></i>
+        </div>
+        <h3 class="text-base font-bold text-slate-700">לא נמצאו משרות עדיין</h3>
+        <p class="text-sm text-slate-500 max-w-sm mx-auto mt-1">העלה את קורות החיים שלך ולחץ על "סרוק משרות עכשיו" כדי שהסוכן יאתר הזדמנויות עבורך.</p>
+        <button onclick="triggerJobScan()" class="mt-4 px-4 py-2 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-xl transition inline-flex items-center gap-2">
+          <i data-lucide="radar" class="w-4 h-4"></i>
+          <span>הפעל סריקה ראשונה</span>
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <!-- Job Detail & Cover Letter Drawer/Modal -->
+  <div id="jobModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-scale-in">
+      <div class="p-6 border-b border-slate-100 flex items-start justify-between bg-slate-50/80">
+        <div>
+          <div class="flex items-center gap-2 mb-1">
+            <span id="modalSourceBadge" class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-700"></span>
+            <span id="modalLangBadge" class="text-xs font-bold px-2.5 py-0.5 rounded-full"></span>
+            <span id="modalMatchScore" class="text-xs font-bold px-2.5 py-0.5 rounded-full"></span>
+          </div>
+          <h3 id="modalJobTitle" class="text-xl font-bold text-slate-900"></h3>
+          <p id="modalCompanyLoc" class="text-sm text-slate-500"></p>
+        </div>
+        <button onclick="closeJobModal()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-200 transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="p-6 overflow-y-auto space-y-6 flex-1 text-sm">
+        <!-- AI Match Reason & Language Match Info -->
+        <div class="bg-indigo-50/70 border border-indigo-100 rounded-xl p-4">
+          <h4 class="font-bold text-indigo-900 flex items-center gap-1.5 mb-1">
+            <i data-lucide="sparkles" class="w-4 h-4 text-brand-600"></i>
+            <span>ניתוח התאמה של הסוכן (AI Match Analysis)</span>
+          </h4>
+          <p id="modalMatchReason" class="text-indigo-800 text-xs leading-relaxed"></p>
+          <div class="mt-3 flex flex-wrap gap-2 text-xs">
+            <div id="modalMatchingSkills" class="flex flex-wrap gap-1"></div>
+            <div id="modalMissingSkills" class="flex flex-wrap gap-1"></div>
+          </div>
+          <div id="modalLangNotice" class="mt-2 text-[11px] font-semibold text-indigo-700 flex items-center gap-1"></div>
+        </div>
+
+        <!-- Cover Letter Generator Box -->
+        <div class="border border-slate-200 rounded-xl p-5 bg-white shadow-sm space-y-3">
+          <div class="flex items-center justify-between">
+            <h4 class="font-bold text-slate-800 flex items-center gap-1.5">
+              <i data-lucide="mail-check" class="w-4 h-4 text-emerald-600"></i>
+              <span>מכתב פנייה מותאם (Cover Letter)</span>
+            </h4>
+            <div class="flex items-center gap-2">
+              <select id="coverLetterLang" class="text-xs bg-slate-50 border border-slate-200 rounded-lg px-2 py-1">
+                <option value="auto">אוטומטי לפי שפת המשרה 🎯</option>
+                <option value="he">עברית 🇮🇱</option>
+                <option value="en">English 🇺🇸</option>
+              </select>
+              <button onclick="generateCoverLetterForModal()" class="px-3 py-1 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition inline-flex items-center gap-1">
+                <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                <span id="genLetterBtnText">חולל מכתב מחדש</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="relative">
+            <textarea id="modalCoverLetterText" rows="7" class="w-full text-xs font-mono p-3 bg-slate-50 border border-slate-200 rounded-lg leading-relaxed focus:bg-white transition" placeholder="לחץ על חולל מכתב כדי שהסוכן ינסח פנייה מותאמת בשפת המשרה..."></textarea>
+            <button onclick="copyCoverLetter()" class="absolute left-2 bottom-3 px-2.5 py-1 bg-white border border-slate-200 rounded-md text-xs font-semibold text-slate-700 hover:bg-slate-50 shadow-sm transition inline-flex items-center gap-1">
+              <i data-lucide="copy" class="w-3 h-3"></i>
+              <span id="copyLetterBtnText">העתק ללוח</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Full Job Description -->
+        <div>
+          <h4 class="font-bold text-slate-800 mb-2">תיאור המשרה המלא</h4>
+          <div id="modalJobDescription" class="text-xs text-slate-600 whitespace-pre-line leading-relaxed bg-slate-50 p-4 rounded-xl border border-slate-100 max-h-60 overflow-y-auto"></div>
+        </div>
+      </div>
+
+      <div class="p-4 border-t border-slate-100 bg-slate-50/80 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-medium text-slate-500">סטטוס:</span>
+          <select id="modalStatusSelect" onchange="updateModalJobStatus(this.value)" class="text-xs font-semibold bg-white border border-slate-200 rounded-lg px-3 py-1.5 focus:outline-none">
+            <option value="new">חדש (New)</option>
+            <option value="bookmarked">שמור (Bookmarked)</option>
+            <option value="applied">הוגשה מועמדות (Applied)</option>
+            <option value="interviewing">ראיון (Interviewing)</option>
+            <option value="rejected">נדחה (Rejected)</option>
+          </select>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button onclick="closeJobModal()" class="px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-200 rounded-lg transition">סגור</button>
+          <a id="modalJobApplyLink" href="#" target="_blank" class="px-4 py-2 text-xs font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-lg shadow-sm transition inline-flex items-center gap-1.5">
+            <span>מעבר להגשה באתר</span>
+            <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div id="settingsModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden animate-scale-in">
+      <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+        <h3 class="font-bold text-slate-900 flex items-center gap-2">
+          <i data-lucide="sliders" class="w-5 h-5 text-brand-600"></i>
+          <span>הגדרות סוכן ה-AI</span>
+        </h3>
+        <button onclick="closeSettingsModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <div class="p-6 space-y-4 text-sm">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">מפתח Gemini API (אופציונלי להעמקת הניתוח)</label>
+          <input type="password" id="geminiApiKeyInput" placeholder="AIzaSy..." class="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500/20">
+          <p class="text-[11px] text-slate-400 mt-1">גם ללא מפתח, הסוכן כולל מנוע AI חכם מקומי לחילוץ כישורים והתאמת משרות מלאה.</p>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">מיקום גיאוגרפי לחיפוש</label>
+          <input type="text" id="searchLocationInput" value="Israel" class="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg">
+        </div>
+
+        <!-- LinkedIn Auto Easy Apply Connection -->
+        <div class="pt-3 border-t border-slate-100 space-y-3">
+          <div class="flex items-center justify-between">
+            <label class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+              <i data-lucide="linkedin" class="w-4 h-4 text-blue-600"></i>
+              <span>חיבור לחשבון LinkedIn של ליאור (Easy Apply מזוהה)</span>
+            </label>
+            <span id="linkedinConnectionBadge" class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">בודק...</span>
+          </div>
+          
+          <div class="p-3 bg-blue-50/70 rounded-xl border border-blue-200 text-xs text-blue-900 space-y-2">
+            <div class="font-bold flex items-center gap-1.5">
+              <i data-lucide="shield-check" class="w-4 h-4 text-blue-600"></i>
+              <span>חיבור ישיר ומאובטח ב-10 שניות (ללא חלונות רקע):</span>
+            </div>
+            <p class="text-[11px] text-blue-800 leading-relaxed">
+              כדי שהסוכן יזהה משרות שהגשת בעבר ויגיש Easy Apply אוטומטית ישירות מהחשבון שלך, יש שתי דרכים פשוטות:
+            </p>
+          </div>
+
+          <!-- דרך 1: הדבקת עוגיית li_at ישירות -->
+          <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+            <label class="block text-xs font-bold text-slate-800">
+              אפשרות 1: הדבק כאן את עוגיית <code class="bg-slate-200 px-1 py-0.5 rounded text-blue-700">li_at</code>
+            </label>
+            <div class="flex gap-2">
+              <input type="password" id="linkedinCookieInput" placeholder="הדבק עוגייה המתחילה ב-AQED..." class="flex-1 text-xs p-2 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand-500">
+              <button type="button" onclick="saveLinkedInCookieDirect()" class="px-3 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm transition shrink-0">
+                שמור והתחבר ✓
+              </button>
+            </div>
+            <p class="text-[10px] text-slate-500">
+              איפה מוצאים? ב-LinkedIn לחץ <b>F12</b> ➔ עבור ל-<b>Application</b> (או <b>Storage</b>) ➔ בחר <b>Cookies</b> ➔ העתק את הערך של <b>li_at</b>.
+            </p>
+          </div>
+
+          <!-- דרך 2: פקודת קונסול של קליק אחד -->
+          <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+            <div class="flex items-center justify-between">
+              <label class="text-xs font-bold text-slate-800">
+                אפשרות 2: חיבור בקליק אחד דרך ה-Console
+              </label>
+              <button type="button" onclick="copyLinkedInConsoleSnippet()" class="text-[11px] font-bold text-blue-700 hover:text-blue-800 bg-blue-100 hover:bg-blue-200 px-2 py-0.5 rounded transition flex items-center gap-1">
+                <i data-lucide="copy" class="w-3 h-3"></i>
+                <span>העתק פקודה</span>
+              </button>
+            </div>
+            <p class="text-[10px] text-slate-500 leading-relaxed">
+              העתק את הפקודה, פתח את ה-Console (מקש F12) בעמוד כלשהו של לינקדאין, הדבק ולחץ <b>Enter</b> – והדשבורד יתחבר מיידית!
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="p-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-2">
+        <button onclick="closeSettingsModal()" class="px-4 py-2 text-xs font-medium text-slate-600">ביטול</button>
+        <button onclick="saveSettings()" class="px-4 py-2 text-xs font-semibold text-white bg-brand-600 rounded-lg shadow-sm">שמור הגדרות</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Manual Add Job Modal -->
+  <div id="manualModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden animate-scale-in">
+      <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+        <h3 class="font-bold text-slate-900 flex items-center gap-2">
+          <i data-lucide="plus-circle" class="w-5 h-5 text-brand-600"></i>
+          <span>הוספת משרה ידנית לניתוח AI</span>
+        </h3>
+        <button onclick="closeManualModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <div class="p-6 space-y-3 text-sm">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">שם המשרה *</label>
+          <input type="text" id="manualTitle" placeholder="לדוגמה: Senior Backend Engineer" class="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">שם החברה *</label>
+          <input type="text" id="manualCompany" placeholder="לדוגמה: Wiz, Monday, AppsFlyer..." class="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">קישור למשרה (URL אופציונלי)</label>
+          <input type="text" id="manualUrl" placeholder="https://..." class="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">תיאור ודרישות המשרה *</label>
+          <textarea id="manualDesc" rows="4" placeholder="הדבק כאן את טקסט המשרה, דרישות הסף וטכנולוגיות..." class="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg"></textarea>
+        </div>
+      </div>
+      <div class="p-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-2">
+        <button onclick="closeManualModal()" class="px-4 py-2 text-xs font-medium text-slate-600">ביטול</button>
+        <button onclick="submitManualJob()" class="px-4 py-2 text-xs font-semibold text-white bg-brand-600 rounded-lg shadow-sm">נתח והוסף משרה</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Paste CV Modal -->
+  <div id="pasteCvModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden animate-scale-in">
+      <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+        <h3 class="font-bold text-slate-900 flex items-center gap-2">
+          <i data-lucide="clipboard" class="w-5 h-5 text-brand-600"></i>
+          <span id="pasteCvModalTitle">הדבקת תוכן קורות חיים</span>
+        </h3>
+        <button onclick="closePasteCvModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <div class="p-6 space-y-3 text-sm">
+        <p class="text-xs text-slate-500" id="pasteCvSubtext">הדבק כאן את הטקסט של קורות החיים שלך (ניסיון, טכנולוגיות, השכלה):</p>
+        <textarea id="pasteCvText" rows="8" placeholder="הדבק כאן..." class="w-full text-xs p-3 bg-slate-50 border border-slate-200 rounded-lg font-mono"></textarea>
+      </div>
+      <div class="p-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-2">
+        <button onclick="closePasteCvModal()" class="px-4 py-2 text-xs font-medium text-slate-600">ביטול</button>
+        <button onclick="submitPastedCv()" class="px-4 py-2 text-xs font-semibold text-white bg-brand-600 rounded-lg shadow-sm">נתח קורות חיים</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI Application Kit Modal (מה למלא בשדות הטופס + איזה טופס להגיש) -->
+  <div id="applicationKitModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[92vh] shadow-2xl flex flex-col overflow-hidden animate-scale-in">
+      
+      <!-- Modal Header -->
+      <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-gradient-to-l from-indigo-50/60 to-white">
+        <div class="flex items-center gap-3">
+          <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-600 text-white flex items-center justify-center shadow-md shadow-brand-500/20 shrink-0">
+            <i data-lucide="sparkles" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span id="appKitCompanyBadge" class="text-xs font-bold text-brand-700 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-100"></span>
+              <span id="appKitLangBadge" class="text-xs font-bold px-2 py-0.5 rounded-md"></span>
+              <span id="appKitScoreBadge" class="text-xs font-extrabold px-2 py-0.5 rounded-md"></span>
+            </div>
+            <h3 id="appKitJobTitle" class="text-lg font-bold text-slate-900 mt-0.5"></h3>
+          </div>
+        </div>
+        <button onclick="closeApplicationKitModal()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body (Scrollable) -->
+      <div class="p-6 overflow-y-auto space-y-6 text-sm flex-1 bg-slate-50/30">
+
+        <!-- 1. איזה טופס להגיש (CV Selection Section) -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+          <div class="flex items-center justify-between">
+            <h4 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+              <i data-lucide="file-check-2" class="w-4 h-4 text-emerald-600"></i>
+              <span>1. איזה טופס וקורות חיים להגיש?</span>
+            </h4>
+            <span id="appKitCvBadge" class="text-xs font-bold px-2.5 py-1 rounded-full"></span>
+          </div>
+
+          <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-lg bg-red-50 border border-red-100 flex items-center justify-center text-red-600 shrink-0">
+                <i data-lucide="file-text" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <p id="appKitCvFileName" class="text-xs font-bold text-slate-800"></p>
+                <p id="appKitCvFileSize" class="text-[11px] text-slate-500"></p>
+              </div>
+            </div>
+
+            <a id="appKitCvDownloadBtn" href="#" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg shadow-2xs transition">
+              <i data-lucide="download" class="w-3.5 h-3.5"></i>
+              <span>צפה / הורד קובץ PDF</span>
+            </a>
+          </div>
+
+          <div class="p-3 bg-indigo-50/60 rounded-xl border border-indigo-100 text-xs text-indigo-950 flex items-start gap-2">
+            <i data-lucide="info" class="w-4 h-4 text-indigo-600 shrink-0 mt-0.5"></i>
+            <div>
+              <span class="font-bold">נימוק בחירת הטופס ע"י ה-AI: </span>
+              <span id="appKitCvRationale"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. מה למלא בשדות הטופס (AI Auto-Filled Fields) -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <div class="flex items-center justify-between">
+            <h4 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+              <i data-lucide="clipboard-pen" class="w-4 h-4 text-brand-600"></i>
+              <span>2. מה למלא בשדות הטופס (תשובות מנוסחות ע"י Google AI Pro)</span>
+            </h4>
+            <span class="text-xs font-medium text-slate-500" id="appKitFieldsCount"></span>
+          </div>
+
+          <p class="text-xs text-slate-500">
+            ה-AI ניתח את דרישות המשרה וניסח עבור כל שדה בטופס את המענה המדויק ביותר מתוך הרקע המקצועי של ליאור (ניתן לערוך ידנית):
+          </p>
+
+          <!-- Form Fields Container -->
+          <div id="appKitFieldsContainer" class="space-y-3.5">
+            <!-- Dynamic fields rendered here -->
+          </div>
+        </div>
+
+        <!-- 3. מכתב פנייה מותאם אישית (Cover Letter) -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+          <div class="flex items-center justify-between">
+            <h4 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+              <i data-lucide="mail-check" class="w-4 h-4 text-indigo-600"></i>
+              <span>3. מכתב פנייה מותאם אישית למשרה</span>
+            </h4>
+            <button onclick="copyAppKitCoverLetter()" class="text-xs font-semibold text-brand-600 hover:text-brand-700 flex items-center gap-1 bg-indigo-50 px-2.5 py-1 rounded-lg">
+              <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+              <span>העתק מכתב</span>
+            </button>
+          </div>
+
+          <textarea id="appKitCoverLetterText" rows="6" class="w-full text-xs p-3 bg-slate-50 border border-slate-200 rounded-xl font-sans focus:outline-none focus:ring-2 focus:ring-brand-500/20 leading-relaxed"></textarea>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer Action Bar -->
+      <div class="p-4 border-t border-slate-200 bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
+        <div class="flex items-center gap-2">
+          <button onclick="copyAllAppKitAnswers()" class="px-3.5 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition inline-flex items-center gap-1.5">
+            <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+            <span>העתק את כל התשובות ללוח (1-Click)</span>
+          </button>
+          <a id="appKitExternalLink" href="#" target="_blank" class="px-3.5 py-2 text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-xl border border-indigo-200 transition inline-flex items-center gap-1.5">
+            <span>פתח עמוד משרה באתר</span>
+            <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+          </a>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button onclick="closeApplicationKitModal()" class="px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-xl transition">
+            סגור
+          </button>
+          <button id="btnExecuteSubmit" onclick="executeJobApplication()" class="px-5 py-2 text-xs font-bold text-white bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 rounded-xl shadow-md shadow-emerald-600/20 transition active:scale-95 inline-flex items-center gap-2">
+            <i data-lucide="send" class="w-4 h-4"></i>
+            <span id="btnExecuteSubmitText">הגש מועמדות וסמן כהוגש ✓</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Inspect URL Modal (הדבק קישור להגשה ישירה) -->
+  <div id="inspectUrlModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden animate-scale-in">
+      <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+        <h3 class="font-bold text-slate-900 flex items-center gap-2">
+          <i data-lucide="sparkles" class="w-5 h-5 text-brand-600"></i>
+          <span>ניתוח טופס והגשה מכל קישור</span>
+        </h3>
+        <button onclick="closeInspectUrlModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <div class="p-6 space-y-3 text-sm">
+        <p class="text-xs text-slate-600 leading-relaxed">
+          מצאת משרה ב-Greenhouse, Comeet, LinkedIn, או באתר חברה? הדבק כאן את הקישור והסוכן יזהה אוטומטית את השפה, יבחר את קורות החיים המתאימים וימלא את כל שדות הטופס עם Google AI Pro:
+        </p>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">קישור לעמוד המשרה / טופס ההגשה *</label>
+          <input type="url" id="inspectUrlInput" placeholder="https://boards.greenhouse.io/... או https://www.comeet.com/jobs/..." class="w-full text-xs p-3 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500/20">
+        </div>
+      </div>
+      <div class="p-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-2">
+        <button onclick="closeInspectUrlModal()" class="px-4 py-2 text-xs font-medium text-slate-600">ביטול</button>
+        <button id="btnRunInspectUrl" onclick="submitInspectUrl()" class="px-4 py-2 text-xs font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-lg shadow-sm flex items-center gap-1.5">
+          <i data-lucide="scan" class="w-4 h-4"></i>
+          <span id="inspectUrlBtnText">נתח טופס והכן הגשה</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LinkedIn Easy Apply Progress Modal -->
+  <div id="easyApplyModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden animate-scale-in">
+      <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-gradient-to-l from-blue-50/70 to-white">
+        <h3 class="font-bold text-slate-900 flex items-center gap-2">
+          <i data-lucide="zap" class="w-5 h-5 text-blue-600"></i>
+          <span id="easyApplyModalTitle">LinkedIn Auto Easy Apply</span>
+        </h3>
+        <button onclick="closeEasyApplyModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+
+      <div class="p-6 space-y-4 text-sm">
+        <div class="p-3.5 bg-blue-50/60 rounded-xl border border-blue-100 flex items-center gap-3">
+          <div class="w-9 h-9 rounded-lg bg-blue-600 text-white flex items-center justify-center shrink-0">
+            <i data-lucide="bot" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h4 id="easyApplyJobTitle" class="text-xs font-bold text-slate-900"></h4>
+            <p id="easyApplyJobCompany" class="text-[11px] text-slate-500"></p>
+          </div>
+        </div>
+
+        <div>
+          <h5 class="text-xs font-bold text-slate-700 mb-2 flex items-center gap-1.5">
+            <i data-lucide="activity" class="w-3.5 h-3.5 text-blue-600"></i>
+            <span>יומן פעילות אוטומציה בזמן אמת:</span>
+          </h5>
+          <div id="easyApplyLogsContainer" class="p-3 bg-slate-900 text-slate-200 text-xs font-mono rounded-xl h-44 overflow-y-auto space-y-1.5 leading-relaxed">
+            <!-- Dynamic logs -->
+          </div>
+        </div>
+
+        <div id="easyApplyStatusBanner" class="p-3 rounded-xl text-xs font-bold hidden"></div>
+      </div>
+
+      <div class="p-4 border-t border-slate-100 bg-slate-50 flex justify-between items-center">
+        <span class="text-[11px] text-slate-500">Google AI Pro מנוע חכם למענה</span>
+        <button onclick="closeEasyApplyModal()" class="px-4 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-100 rounded-lg shadow-2xs">סגור</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Meta-Agent Diagnostic & Optimization Modal -->
+  <div id="metaAgentModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-3xl w-full shadow-2xl overflow-hidden animate-scale-in flex flex-col max-h-[90vh]">
+      <!-- Modal Header -->
+      <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-gradient-to-l from-emerald-50/80 via-slate-50 to-white">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-md shadow-emerald-500/20">
+            <i data-lucide="cpu" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
+              <span>סוכן שיפור מתמיד (Meta AI Agent)</span>
+              <span class="text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold">אוטונומי</span>
+            </h3>
+            <p class="text-xs text-slate-500">איתור תקלות, שיפור אלגוריתם ההתאמה, ריפוי סורקים וניקוי משרות שגויות</p>
+          </div>
+        </div>
+        <button onclick="closeMetaAgentModal()" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body (Scrollable) -->
+      <div class="p-6 space-y-6 overflow-y-auto flex-1">
+
+        <!-- Top Score & Health Banner -->
+        <div class="bg-gradient-to-r from-slate-900 via-emerald-950 to-slate-900 text-white p-5 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 border border-emerald-500/20 shadow-sm">
+          <div class="flex items-center gap-4">
+            <div class="relative flex items-center justify-center">
+              <div class="w-16 h-16 rounded-2xl bg-emerald-500/20 border border-emerald-400/40 flex flex-col items-center justify-center">
+                <span id="modalHealthScoreValue" class="text-2xl font-black text-emerald-400">--</span>
+                <span class="text-[9px] text-slate-300 font-bold uppercase tracking-wider">ציון</span>
+              </div>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h4 class="text-sm font-bold text-white">ציון בריאות ומוכנות המערכת</h4>
+                <span id="modalHealthBadge" class="text-[10px] px-2 py-0.5 rounded-full font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">נבדק</span>
+              </div>
+              <p id="modalHealthSummaryText" class="text-xs text-slate-300 mt-1">טוען נתוני דיאגנוסטיקה...</p>
+              <div class="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1">
+                <i data-lucide="clock" class="w-3 h-3"></i>
+                <span id="modalAuditTimestamp">בדיקה אחרונה: טרם בוצעה</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button id="btnRunAuditModal" onclick="triggerMetaAudit()" class="px-3.5 py-2 text-xs font-semibold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5">
+              <i data-lucide="refresh-cw" class="w-3.5 h-3.5" id="auditSpinIcon"></i>
+              <span>הרץ בדיקה</span>
+            </button>
+            <button id="btnOptimizeAllModal" onclick="runAutoOptimization()" class="px-4 py-2 text-xs font-bold text-slate-950 bg-gradient-to-r from-emerald-400 to-teal-300 hover:from-emerald-300 hover:to-teal-200 rounded-xl shadow-md transition flex items-center gap-1.5">
+              <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+              <span>שפר הכל אוטומטית 🚀</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Subsystem Diagnostics Grid -->
+        <div>
+          <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+            <i data-lucide="layers" class="w-4 h-4 text-emerald-600"></i>
+            <span>סטטוס תתי-מערכות</span>
+          </h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <!-- Scrapers -->
+            <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50/50 space-y-1.5">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-700">סורקי משרות</span>
+                <span id="diagScraperBadge" class="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-slate-200 text-slate-700">--</span>
+              </div>
+              <p id="diagScraperDetails" class="text-[11px] text-slate-500">טוען...</p>
+            </div>
+
+            <!-- Match Engine -->
+            <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50/50 space-y-1.5">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-700">מנוע התאמה</span>
+                <span id="diagMatchBadge" class="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-slate-200 text-slate-700">--</span>
+              </div>
+              <p id="diagMatchDetails" class="text-[11px] text-slate-500">טוען...</p>
+            </div>
+
+            <!-- Bilingual Strategy -->
+            <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50/50 space-y-1.5">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-700">כיסוי דו-לשוני</span>
+                <span id="diagBilingualBadge" class="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-slate-200 text-slate-700">--</span>
+              </div>
+              <p id="diagBilingualDetails" class="text-[11px] text-slate-500">טוען...</p>
+            </div>
+
+            <!-- DB & Hygiene -->
+            <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50/50 space-y-1.5">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-700">היגיינת DB</span>
+                <span id="diagHygieneBadge" class="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-slate-200 text-slate-700">--</span>
+              </div>
+              <p id="diagHygieneDetails" class="text-[11px] text-slate-500">טוען...</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Autonomous Thinking & Real-Time Action Stream -->
+        <div class="bg-slate-900 text-slate-100 p-5 rounded-2xl border border-slate-800 space-y-4 shadow-sm">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800/80 pb-3">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                <i data-lucide="brain-circuit" class="w-4 h-4"></i>
+              </div>
+              <div>
+                <h4 class="text-xs font-bold text-white flex items-center gap-2">
+                  <span>זרם מחשבות ופעולות אוטונומיות בזמן אמת</span>
+                  <span id="autoLoopBadge" class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">פעיל ברקע</span>
+                </h4>
+                <p id="autoLoopNextCycle" class="text-[11px] text-slate-400 mt-0.5">סבב שיפור הבא מתבצע ברקע...</p>
+              </div>
+            </div>
+
+            <div class="flex items-center flex-wrap gap-2">
+              <div class="flex items-center gap-1.5 bg-slate-950 px-2 py-1 rounded-lg border border-slate-800 text-xs">
+                <span class="text-[11px] text-slate-400">תדירות:</span>
+                <select id="autoLoopIntervalSelect" onchange="changeAutonomousInterval(this.value)" class="text-[11px] font-semibold bg-transparent text-emerald-400 focus:outline-none cursor-pointer">
+                  <option value="300" class="bg-slate-900 text-white">כל 5 דקות ⚡</option>
+                  <option value="600" selected class="bg-slate-900 text-white">כל 10 דקות (מומלץ) 🕒</option>
+                  <option value="1800" class="bg-slate-900 text-white">כל 30 דקות ⏳</option>
+                  <option value="3600" class="bg-slate-900 text-white">כל שעה 🌅</option>
+                </select>
+              </div>
+              <button id="btnTriggerCycleModal" onclick="triggerImmediateAutonomousCycle()" class="px-3 py-1.5 text-xs font-semibold text-emerald-300 bg-emerald-950/80 hover:bg-emerald-900/80 border border-emerald-500/30 rounded-lg transition flex items-center gap-1 active:scale-95">
+                <i data-lucide="zap" class="w-3.5 h-3.5 text-emerald-400"></i>
+                <span>הפעל סבב חשיבה מיידי</span>
+              </button>
+              <button id="btnToggleAutoModal" onclick="toggleAutonomousLoop()" class="px-3 py-1.5 text-xs font-medium text-slate-300 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg transition flex items-center gap-1">
+                <i data-lucide="pause-circle" class="w-3.5 h-3.5" id="toggleLoopIcon"></i>
+                <span id="toggleLoopText">השהה מצב רציף</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Current Real-Time Thought -->
+          <div class="p-3 bg-slate-950 rounded-xl border border-slate-800/80 flex items-start gap-2.5">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping mt-1 shrink-0"></span>
+            <div>
+              <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-400 block mb-0.5">מחשבה נוכחית של הסוכן:</span>
+              <p id="currentThoughtText" class="text-xs text-slate-200 leading-relaxed font-mono">
+                ממתין לסבב הבא...
+              </p>
+            </div>
+          </div>
+
+          <!-- Stream of Thoughts & Actions -->
+          <div class="space-y-2">
+            <span class="text-[11px] font-bold text-slate-400 block">יומן תובנות ושיפורים אחרונים (ללא צורך בלחיצה):</span>
+            <div id="autonomousThoughtsContainer" class="space-y-2 max-h-56 overflow-y-auto pr-1">
+              <div class="text-xs text-slate-400 italic p-3 text-center">טוען מחשבות אוטונומיות...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actionable Recommendations List -->
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+              <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600"></i>
+              <span>המלצות לשיפור וייעול אוטונומי</span>
+            </h4>
+            <span id="recsCountPill" class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">0 המלצות</span>
+          </div>
+
+          <div id="metaRecommendationsContainer" class="space-y-2.5">
+            <div class="p-6 text-center text-xs text-slate-400 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+              הרץ דיאגנוסטיקה לטעינת המלצות המטא-סוכן
+            </div>
+          </div>
+        </div>
+
+        <!-- Conceived & Built Features by Meta-Agent -->
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+              <i data-lucide="sparkles" class="w-4 h-4 text-brand-600"></i>
+              <span>פיצ'רים חדשים שהסוכן הגה ובנה בעצמו (Feature Innovation Lab)</span>
+            </h4>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800">4 יכולות חדשות מיושמות</span>
+          </div>
+          <div id="metaConceivedFeaturesContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <!-- Dynamically rendered -->
+          </div>
+        </div>
+
+        <!-- Recent Improvements Log -->
+        <div id="appliedFixesSection" class="hidden">
+          <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+            <i data-lucide="check" class="w-4 h-4 text-emerald-600"></i>
+            <span>שיפורים שבוצעו בהצלחה לאחרונה</span>
+          </h4>
+          <div id="appliedFixesContainer" class="space-y-1.5 p-3 bg-emerald-50/60 rounded-xl border border-emerald-200 text-xs">
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
+        <span class="text-[11px] text-slate-500">סוכן שיפור מתמיד (Meta AI) | פועל ברקע ומנטר את ביצועי הסוכן</span>
+        <button onclick="closeMetaAgentModal()" class="px-4 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-100 rounded-lg shadow-2xs">
+          סגור
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Interview Coach Modal (מאמן הכנה לראיונות עבודה) -->
+  <div id="interviewCoachModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden animate-scale-in flex flex-col max-h-[90vh]">
+      <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-gradient-to-l from-purple-50 via-slate-50 to-white">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-purple-600 text-white flex items-center justify-center shadow-md shadow-purple-500/20">
+            <i data-lucide="mic" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
+              <span id="interviewCoachTitle">מאמן ראיונות אישי (AI Interview Coach)</span>
+              <span class="text-xs bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full font-bold">STAR Method</span>
+            </h3>
+            <p id="interviewCoachSubtitle" class="text-xs text-slate-500">הכנה ממוקדת על בסיס קורות החיים שלך ודרישות המשרה הספציפית</p>
+          </div>
+        </div>
+        <button onclick="closeInterviewCoachModal()" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-6 overflow-y-auto flex-1 text-sm">
+        <!-- Pep Talk / Strategy Banner -->
+        <div class="p-4 bg-purple-50/70 border border-purple-200 rounded-xl space-y-1">
+          <h4 class="text-xs font-bold text-purple-900 flex items-center gap-1.5">
+            <i data-lucide="sparkles" class="w-4 h-4 text-purple-600"></i>
+            <span>תדריך אסטרטגי לקראת הראיון:</span>
+          </h4>
+          <p id="interviewExecutiveSummary" class="text-xs text-slate-700 leading-relaxed"></p>
+        </div>
+
+        <!-- Predicted Questions & Model Answers -->
+        <div class="space-y-3">
+          <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+            <i data-lucide="help-circle" class="w-4 h-4 text-purple-600"></i>
+            <span>5 שאלות צפויות ותשובות מודל מותאמות אישית לקו"ח שלך:</span>
+          </h4>
+          <div id="interviewQuestionsContainer" class="space-y-3">
+            <!-- Questions rendered here -->
+          </div>
+        </div>
+
+        <!-- Winning Questions to Ask the Interviewer -->
+        <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+          <h4 class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+            <i data-lucide="message-square-plus" class="w-4 h-4 text-emerald-600"></i>
+            <span>3 שאלות מנצחות לשאול את המראיין בסוף הראיון:</span>
+          </h4>
+          <ul id="interviewQuestionsToAsk" class="space-y-1.5 text-xs text-slate-700 list-disc list-inside"></ul>
+        </div>
+
+        <!-- Insider Tips -->
+        <div class="p-4 bg-amber-50/60 border border-amber-200 rounded-xl space-y-2">
+          <h4 class="text-xs font-bold text-amber-900 flex items-center gap-1.5">
+            <i data-lucide="lightbulb" class="w-4 h-4 text-amber-600"></i>
+            <span>טיפים מנצחים להפגנת ביטחון והתאמה:</span>
+          </h4>
+          <ul id="interviewInsiderTips" class="space-y-1.5 text-xs text-slate-700 list-disc list-inside"></ul>
+        </div>
+      </div>
+
+      <div class="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
+        <span class="text-[11px] text-slate-500">תשובות מודל מותאמות לתואר בכלכלה ולניסיון מעשי ב-Excel, ERP ו-P&L</span>
+        <button onclick="closeInterviewCoachModal()" class="px-4 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-100 rounded-lg shadow-2xs">סגור</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- WhatsApp Daily Digest Modal (סיכום יומי לוואטסאפ) -->
+  <div id="whatsappDigestModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden animate-scale-in flex flex-col">
+      <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-gradient-to-l from-emerald-50 via-slate-50 to-white">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-md shadow-emerald-500/20">
+            <i data-lucide="message-circle" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-slate-900 text-base">סיכום משרות מותאם לוואטסאפ 📱</h3>
+            <p class="text-xs text-slate-500">הודעה מעוצבת ומוכנה לשליחה מהירה לעצמך או לאנשי קשר</p>
+          </div>
+        </div>
+        <button onclick="closeWhatsAppModal()" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-4 text-sm">
+        <p class="text-xs text-slate-600 leading-relaxed">
+          הסוכן אסף את המשרות החמות ביותר שנמצאו עבורך היום, כולל שכר משוער, ציוני התאמה וקישורים ישירים:
+        </p>
+        <!-- Realistic WhatsApp Bubble Preview -->
+        <div class="whatsapp-chat-wallpaper shadow-inner">
+          <div class="whatsapp-bubble text-slate-800 text-xs font-sans leading-relaxed space-y-1">
+            <div class="flex items-center justify-between pb-1.5 border-b border-slate-100 text-[10px] text-slate-500 font-semibold">
+              <span class="flex items-center gap-1 text-emerald-700 font-bold"><i data-lucide="check-check" class="w-3.5 h-3.5 text-blue-500"></i> Smart Job Hunter AI</span>
+              <span id="whatsappBubbleTimestamp">היום</span>
+            </div>
+            <textarea id="whatsappDigestTextarea" rows="10" readonly class="w-full text-xs font-sans p-2 bg-transparent border-0 focus:outline-none leading-relaxed text-slate-800 select-all resize-none"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between gap-2">
+        <button onclick="copyWhatsAppDigestText()" class="px-3.5 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-100 rounded-xl transition flex items-center gap-1.5 shadow-2xs">
+          <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+          <span id="copyWhatsappBtnText">העתק הודעה</span>
+        </button>
+        <a id="btnSendWhatsAppDirect" href="#" target="_blank" class="px-4 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-md transition flex items-center gap-1.5">
+          <i data-lucide="send" class="w-3.5 h-3.5"></i>
+          <span>פתח ישירות ב-WhatsApp 💬</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Skill Gaps & Roadmap Modal (מפת פערי כישורים והמלצות למידה) -->
+  <div id="skillGapsModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-xl w-full shadow-2xl overflow-hidden animate-scale-in flex flex-col max-h-[90vh]">
+      <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-gradient-to-l from-purple-50 via-slate-50 to-white">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-purple-600 text-white flex items-center justify-center shadow-md shadow-purple-500/20">
+            <i data-lucide="trending-up" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-slate-900 text-base">מפת פערי כישורים ושדרוג קו"ח 🚀</h3>
+            <p class="text-xs text-slate-500">מה הדרישות הנפוצות בשוק שיקפיצו את אחוז ההתאמה והשכר שלך</p>
+          </div>
+        </div>
+        <button onclick="closeSkillGapsModal()" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-4 overflow-y-auto flex-1 text-sm">
+        <div class="p-3.5 bg-purple-50/70 border border-purple-200 rounded-xl flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-purple-600 text-white flex items-center justify-center shrink-0">
+            <i data-lucide="award" class="w-4 h-4"></i>
+          </div>
+          <p id="skillGapsSummaryBanner" class="text-xs text-purple-900 font-semibold leading-relaxed">
+            מנתח דרישות שוק מתוך מאות משרות...
+          </p>
+        </div>
+
+        <div class="space-y-3">
+          <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+            <i data-lucide="check-circle" class="w-4 h-4 text-purple-600"></i>
+            <span>כישורים מבוקשים להשלמה עם מקסימום השפעה:</span>
+          </h4>
+          <div id="skillGapsListContainer" class="space-y-3">
+            <!-- Dynamically rendered -->
+          </div>
+        </div>
+      </div>
+
+      <div class="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
+        <span class="text-[11px] text-slate-500">כל הקורסים והמדריכים המוצעים פתוחים ובחינם</span>
+        <button onclick="closeSkillGapsModal()" class="px-4 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-100 rounded-lg shadow-2xs">סגור</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Polyeda Survey Agent Modal (סוכן מילוי סקרים אוטומטי) -->
+  <div id="surveyAgentModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-3xl w-full shadow-2xl overflow-hidden animate-scale-in flex flex-col max-h-[92vh]">
+      <!-- Header -->
+      <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-gradient-to-l from-amber-50/80 via-slate-50 to-white">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-amber-600 text-white flex items-center justify-center shadow-md shadow-amber-500/20">
+            <i data-lucide="clipboard-check" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
+              <span>סוכן מילוי סקרים אוטומטי (Polyeda / Panel View Bot)</span>
+              <span class="text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-bold">Playwright + AI</span>
+            </h3>
+            <p class="text-xs text-slate-500">התחברות ל-Gmail, איתור הזמנות מ-panelview@polyeda.com ומילוי סקרים אוטונומי</p>
+          </div>
+        </div>
+        <button onclick="closeSurveyAgentModal()" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Top Stats Bar -->
+      <div class="px-6 py-3 bg-slate-50 border-b border-slate-200/80 flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div class="flex items-center gap-4">
+          <div class="flex items-center gap-1.5 font-bold">
+            <span class="text-slate-500">חיבור Gmail:</span>
+            <span id="surveyGmailStatusBadge" class="px-2 py-0.5 rounded-full bg-slate-200 text-slate-700">בדיקה...</span>
+          </div>
+          <div class="flex items-center gap-1.5 font-bold">
+            <span class="text-slate-500">סקרים שהושלמו:</span>
+            <span id="surveyCompletedCount" class="text-emerald-700 font-extrabold">0</span>
+          </div>
+          <div class="flex items-center gap-1.5 font-bold">
+            <span class="text-slate-500">נקודות שנצברו:</span>
+            <span id="surveyTotalPoints" class="text-amber-700 font-extrabold">0</span>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button onclick="triggerSurveyCheck()" class="px-3 py-1.5 text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 rounded-lg shadow-2xs transition flex items-center gap-1 active:scale-95">
+            <i data-lucide="refresh-cw" class="w-3.5 h-3.5" id="surveyCheckSpin"></i>
+            <span id="btnSurveyCheckText">בדוק מיילים ומלא עכשיו ⚡</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <div class="flex border-b border-slate-200 px-6 pt-2 gap-2 text-xs font-bold">
+        <button onclick="switchSurveyTab('surveys')" id="tabBtnSurveys" class="survey-tab-btn active px-3.5 py-2 border-b-2 border-amber-600 text-amber-700">
+          📋 סקרים שהתגלו (<span id="surveyListCountBadge">0</span>)
+        </button>
+        <button onclick="switchSurveyTab('settings')" id="tabBtnSettings" class="survey-tab-btn px-3.5 py-2 border-b-2 border-transparent text-slate-500 hover:text-slate-800">
+          ⚙️ הגדרות חיבור למייל (Gmail)
+        </button>
+        <button onclick="switchSurveyTab('profile')" id="tabBtnProfile" class="survey-tab-btn px-3.5 py-2 border-b-2 border-transparent text-slate-500 hover:text-slate-800">
+          👤 פרופיל דמוגרפי למענה
+        </button>
+      </div>
+
+      <!-- Modal Body (Scrollable) -->
+      <div class="p-6 space-y-6 overflow-y-auto flex-1 text-sm">
+
+        <!-- Panel 1: Surveys List & Direct URL -->
+        <div id="surveyPanelSurveys" class="space-y-4">
+          <!-- Direct URL box -->
+          <div class="p-3.5 bg-amber-50/60 border border-amber-200 rounded-xl space-y-2">
+            <h5 class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+              <i data-lucide="link" class="w-4 h-4 text-amber-600"></i>
+              <span>מילוי סקר מקישור ישיר (אם יש לך קישור ספציפי):</span>
+            </h5>
+            <div class="flex items-center gap-2">
+              <input type="url" id="directSurveyUrlInput" placeholder="https://www.panelview.co.il/survey.aspx?id=..." class="flex-1 text-xs p-2.5 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-amber-500">
+              <button onclick="submitDirectSurveyUrl()" class="shrink-0 px-4 py-2.5 text-xs font-bold text-white bg-slate-800 hover:bg-slate-900 rounded-lg shadow-2xs transition flex items-center gap-1 active:scale-95">
+                <i data-lucide="play" class="w-3.5 h-3.5 text-amber-400"></i>
+                <span>מלא סקר עכשיו</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Surveys Feed -->
+          <div>
+            <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+              <i data-lucide="mail-check" class="w-4 h-4 text-amber-600"></i>
+              <span>סקרים שזוהו ב-Gmail מ-panelview@polyeda.com:</span>
+            </h4>
+            <div id="surveyFeedContainer" class="space-y-2.5">
+              <div class="text-xs text-slate-400 italic p-6 text-center bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                טוען סקרים...
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel 2: Gmail Settings -->
+        <div id="surveyPanelSettings" class="hidden space-y-4">
+          <div class="p-3.5 bg-blue-50/70 border border-blue-200 rounded-xl text-xs text-slate-700 leading-relaxed space-y-1.5">
+            <div class="font-bold text-blue-900 flex items-center gap-1.5">
+              <i data-lucide="info" class="w-4 h-4 text-blue-600"></i>
+              <span>כיצד מחברים את חשבון ה-Gmail שלך בצורה מאובטחת?</span>
+            </div>
+            <p>1. כנס לחשבון Google שלך ➜ <strong>אבטחה</strong> (Security).</p>
+            <p>2. ודא ש<strong>אימות דו-שלבי</strong> פעיל, וחפש <strong>"סיסמאות לאפליקציות" (App Passwords)</strong>.</p>
+            <p>3. צור סיסמת אפליקציה חדשה (למשל בשם "SurveyBot") והדבק את הקוד בן 16 האותיות כאן למטה.</p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">כתובת Gmail שלך *</label>
+              <input type="email" id="surveyGmailUserInput" placeholder="your_email@gmail.com" class="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-amber-500">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">סיסמת אפליקציה (16 תווים App Password) *</label>
+              <input type="password" id="surveyGmailAppPwdInput" placeholder="abcd efgh ijkl mnop" class="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-amber-500">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">כתובת שולח הסקרים לסינון</label>
+              <input type="text" id="surveyTargetSenderInput" value="panelview@polyeda.com" class="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-amber-500">
+            </div>
+
+            <div class="flex items-center gap-2 pt-6">
+              <input type="checkbox" id="surveyHeadlessCheckbox" class="w-4 h-4 text-amber-600 rounded">
+              <label for="surveyHeadlessCheckbox" class="text-xs font-semibold text-slate-700 cursor-pointer">
+                הפעל דפדפן ברקע (Headless=True)
+              </label>
+            </div>
+          </div>
+
+          <div class="pt-2">
+            <button onclick="saveSurveySettings()" class="px-5 py-2.5 text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 rounded-xl shadow-md transition flex items-center gap-1.5 active:scale-95">
+              <i data-lucide="save" class="w-4 h-4"></i>
+              <span>שמור הגדרות מייל</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Panel 3: Demographic Profile -->
+        <div id="surveyPanelProfile" class="hidden space-y-4">
+          <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-600">
+            פרופיל דמוגרפי עקבי מונע פסילות (Screen-out) וחסימות בפאנל הסקרים פולידע / מדגם. הסוכן יענה תמיד בהתאמה מדויקת לפרטים אלו:
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">שם מלא</label>
+              <input type="text" id="profFullName" class="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">מין</label>
+              <select id="profGender" class="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg">
+                <option value="נקבה">נקבה</option>
+                <option value="זכר">זכר</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">שנת לידה / גיל</label>
+              <input type="number" id="profBirthYear" value="1999" class="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">עיר מגורים</label>
+              <input type="text" id="profCity" value="תל אביב - יפו" class="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">אזור / מחוז בארץ</label>
+              <input type="text" id="profDistrict" value="מרכז / תל אביב" class="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">מצב משפחתי</label>
+              <select id="profMarital" class="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg">
+                <option value="רווקה">רווק/ה</option>
+                <option value="נשואה">נשוי/אה</option>
+                <option value="גרושה">גרוש/ה</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">השכלה</label>
+              <input type="text" id="profEducation" value="תואר ראשון (.B.A)" class="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">מעמד תעסוקתי</label>
+              <input type="text" id="profEmployment" value="שכירה במשרה מלאה" class="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">הכנסה חודשית ממוצעת</label>
+              <input type="text" id="profIncome" value="ממוצעת (18,000 - 22,000 ₪)" class="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">מגזר / דת</label>
+              <select id="profReligion" class="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg">
+                <option value="חילונית">יהודי/ה חילוני/ת</option>
+                <option value="מסורתית">יהודי/ה מסורתי/ת</option>
+                <option value="דתית">יהודי/ה דתי/ה</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="pt-2">
+            <button onclick="saveSurveyProfile()" class="px-5 py-2.5 text-xs font-bold text-white bg-slate-800 hover:bg-slate-900 rounded-xl shadow-md transition flex items-center gap-1.5 active:scale-95">
+              <i data-lucide="check" class="w-4 h-4 text-emerald-400"></i>
+              <span>שמור פרופיל דמוגרפי</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Footer -->
+      <div class="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
+        <span class="text-[11px] text-slate-500">סוכן סקרים אוטונומי | מילוי שאלות באמצעות Playwright ו-Google Gemini AI</span>
+        <button onclick="closeSurveyAgentModal()" class="px-4 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-100 rounded-lg shadow-2xs">סגור</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Client JavaScript -->
+  <script src="/static/app.js"></script>
+  <script>
+    lucide.createIcons();
+  </script>
+</body>
+</html>
